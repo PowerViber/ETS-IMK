@@ -1,325 +1,266 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_theme.dart';
 import '../target/target_provider.dart';
-
-class CustomColors {
-  static const Color darkBackground = Color(0xFFF9FAFB);
-  static const Color cardSurface = Colors.white;
-  static const Color neonGreen = Color(0xFF10B981);
-  static const Color electricBlue = Color(0xFF3B82F6);
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF6B7280);
-}
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
+  DateTime _normalize(DateTime value) {
+    return DateTime(value.year, value.month, value.day);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allTargets = ref.watch(targetProvider);
-    final today = DateTime.now();
-    final todayTargets = allTargets.where((t) => 
-      t.date.year == today.year && 
-      t.date.month == today.month && 
-      t.date.day == today.day
-    ).toList();
-    
+    final targets = ref.watch(targetProvider);
+    final today = _normalize(DateTime.now());
+    final todayTargets =
+        targets.where((t) => _normalize(t.date) == today).toList();
+
     return Scaffold(
-      backgroundColor: CustomColors.darkBackground,
+      backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
-        backgroundColor: CustomColors.darkBackground,
+        backgroundColor: const Color(0xFFF3F4F6),
         elevation: 0,
-        leading: const BackButton(color: CustomColors.textPrimary),
-        title: const Text('Dashboard', style: TextStyle(color: CustomColors.textPrimary)),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2F3A43)),
+          onPressed: () => context.go('/home'),
+        ),
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(
+            color: Color(0xFF2F3A43),
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: CustomColors.textPrimary),
-            onPressed: () {
-              showSearch(context: context, delegate: _SurahSearchDelegate());
-            },
-          )
+            icon: const Icon(Icons.search, color: Color(0xFF2F3A43)),
+            onPressed: () {},
+          ),
         ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Welcome Header 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Assalamu`alaikum,',
-                        style: TextStyle(color: CustomColors.textSecondary, fontSize: 14),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Saturo Gojo!',
-                        style: TextStyle(
-                            color: CustomColors.textPrimary,
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Assalamu Alaikum,',
+              style: TextStyle(
+                color: Color(0xFF66717C),
+                fontSize: 26,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              'Ahmad',
+              style: TextStyle(
+                color: Color(0xFF1E2933),
+                fontSize: 48,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0B8A63),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
-
-              // 2. Streak Start Banner 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [CustomColors.neonGreen, Color(0xFF059669)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: CustomColors.neonGreen.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.local_fire_department, color: Colors.white, size: 40),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "ayo mulai streakmu sekarang juga!",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+              child: const Row(
+                children: [
+                  Icon(Icons.local_fire_department,
+                      color: Color(0xFFE3F7EF), size: 42),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'ayo mulai streakmu sekarang juga!',
+                      style: TextStyle(
+                        color: Color(0xFFE3F7EF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
-
-              // 3. Weekly Streak Graph
-              const Text(
-                'Weekly Streak',
-                style: TextStyle(
-                    color: CustomColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Weekly Streak',
+              style: TextStyle(
+                color: Color(0xFF1E2933),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: CustomColors.cardSurface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                      .asMap()
-                      .entries
-                      .map((entry) {
-                    final isActive = entry.key < 4;
-                    return Column(
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFA),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE5EAEE)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _StreakItem(day: 'M', done: true),
+                  _StreakItem(day: 'T', done: true),
+                  _StreakItem(day: 'W', done: true),
+                  _StreakItem(day: 'T', done: true),
+                  _StreakItem(day: 'F', done: false),
+                  _StreakItem(day: 'S', done: false),
+                  _StreakItem(day: 'S', done: false),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'Target Hari ini',
+              style: TextStyle(
+                color: Color(0xFF1E2933),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (todayTargets.isEmpty)
+              GestureDetector(
+                onTap: () => context.go('/target'),
+                child: Container(
+                  width: double.infinity,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border:
+                        Border.all(color: const Color(0xFF66B8A0), width: 2),
+                  ),
+                  child: const Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isActive
-                                ? CustomColors.neonGreen.withOpacity(0.1)
-                                : Colors.transparent,
-                            border: Border.all(
-                                color: isActive
-                                    ? CustomColors.neonGreen
-                                    : Colors.grey.withOpacity(0.2)),
-                          ),
-                          child: isActive
-                              ? const Icon(Icons.check,
-                                  size: 16, color: CustomColors.neonGreen)
-                              : null,
-                        ),
-                        const SizedBox(height: 12),
+                        Icon(Icons.add_circle_outline,
+                            color: Color(0xFF169974), size: 20),
+                        SizedBox(width: 8),
                         Text(
-                          entry.value,
+                          'Mulai Target Baru',
                           style: TextStyle(
-                            color: isActive ? CustomColors.neonGreen : CustomColors.textSecondary,
-                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF169974),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
                           ),
                         ),
                       ],
-                    );
-                  }).toList(),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-
-              // 4. Target Hari Ini
-              const Text(
-                'Target Hari ini',
-                style: TextStyle(
-                    color: CustomColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              if (todayTargets.isNotEmpty)
-                ...todayTargets.map((target) => Card(
-                      color: Colors.white,
-                      elevation: 0,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: target.isCompleted ? AppTheme.accentGreen : Colors.grey[200],
-                          child: Icon(
-                            Icons.check,
-                            color: target.isCompleted ? Colors.white : Colors.grey[400],
-                          ),
-                        ),
-                        title: Text(
-                          target.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: target.isCompleted ? TextDecoration.lineThrough : null,
-                          ),
-                        ),
-                        subtitle: target.description.isNotEmpty ? Text(target.description) : null,
-                      ),
-                    )),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  context.go('/target');
-                },
-                child: Container(
+              )
+            else
+              ...todayTargets.map(
+                (item) => Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: CustomColors.cardSurface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: CustomColors.neonGreen.withOpacity(0.5), width: 1.5),
+                    color: const Color(0xFFF9FAFA),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5EAEE)),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add_circle_outline, color: CustomColors.neonGreen),
-                      SizedBox(width: 8),
-                      Text(
-                        'Mulai Target Baru',
-                        style: TextStyle(
-                          color: CustomColors.neonGreen,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // 5. Progress Section 
-              const Text(
-                'Progress',
-                style: TextStyle(
-                    color: CustomColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: CustomColors.cardSurface,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                ),
-                child: const Center(
                   child: Text(
-                    'Belum ada progress',
-                    style: TextStyle(color: CustomColors.textSecondary),
+                    item.title,
+                    style: const TextStyle(
+                      color: Color(0xFF1E2933),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 40), // Bottom padding
-            ],
-          ),
+            const SizedBox(height: 14),
+            const Text(
+              'Progress',
+              style: TextStyle(
+                color: Color(0xFF1E2933),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              height: 86,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFA),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE5EAEE)),
+              ),
+              child: const Center(
+                child: Text(
+                  'Belum ada progress',
+                  style: TextStyle(
+                    color: Color(0xFF87939D),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// Custom Search Delegate for Surah/Ayat Search
-class _SurahSearchDelegate extends SearchDelegate<String> {
-  @override
-  String get searchFieldLabel => 'Cari surah atau ayat';
+class _StreakItem extends StatelessWidget {
+  const _StreakItem({required this.day, required this.done});
+
+  final String day;
+  final bool done;
 
   @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      )
-    ];
-  }
-
-  @override
-  Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: done ? const Color(0xFF1AAA7E) : const Color(0xFFD9E0E5),
+              width: 1.5,
+            ),
+            color: done ? const Color(0xFFE7F7F1) : Colors.transparent,
+          ),
+          child: done
+              ? const Icon(Icons.check, size: 14, color: Color(0xFF1AAA7E))
+              : null,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          day,
+          style: TextStyle(
+            color: done ? const Color(0xFF1AAA7E) : const Color(0xFF6A7480),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return Center(
-      child: Text('Hasil pencarian untuk "$query"'),
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    // Empty suggestions for now
-    return ListView();
   }
 }

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_theme.dart';
 
 class MainScaffold extends StatelessWidget {
-  final StatefulNavigationShell navigationShell;
-
   const MainScaffold({
     super.key,
     required this.navigationShell,
   });
+
+  final StatefulNavigationShell navigationShell;
 
   void _onTap(int index) {
     navigationShell.goBranch(
@@ -20,8 +19,7 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      // Removed the built-in appBar completely to use a custom single bar.
+      backgroundColor: const Color(0xFFF0F1F1),
       body: Column(
         children: [
           _FullTopNavBar(
@@ -36,87 +34,105 @@ class MainScaffold extends StatelessWidget {
 }
 
 class _FullTopNavBar extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
   const _FullTopNavBar({
     required this.currentIndex,
     required this.onTap,
   });
 
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
   @override
   Widget build(BuildContext context) {
-    final tabs = ['Al-Quran', 'Latihan', 'Target'];
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return Container(
-      // The navbar background should be the mosque color (accentGreen)
-      color: AppTheme.accentGreen,
-      padding: EdgeInsets.only(top: topPadding),
-      // 60 height + status bar padding
-      height: 65 + topPadding,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left Logo (Mosque - White)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: IconButton(
-              icon: const Icon(Icons.mosque, color: Colors.white, size: 28),
-              onPressed: () {
-                context.push('/dashboard');
-              },
+    Widget tabButton({
+      required String label,
+      required bool selected,
+      required VoidCallback onPressed,
+    }) {
+      return GestureDetector(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 7),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
-          
-          // Center Navigation Tabs
+        ),
+      );
+    }
+
+    return Container(
+      color: const Color(0xFF66B89F),
+      padding: EdgeInsets.only(top: topPadding),
+      height: 56 + topPadding,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: GestureDetector(
+              onTap: () => context.go('/home'),
+              child: const Text(
+                "IQRA'",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(tabs.length, (index) {
-                final isSelected = currentIndex == index;
-                return GestureDetector(
-                  onTap: () => onTap(index),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 12), // offset push down
-                        Text(
-                          tabs[index],
-                          style: TextStyle(
-                            // Unselected is slightly faded white, selected is pure white + bold
-                            color: isSelected ? Colors.white : Colors.white70,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          height: 3,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            color: isSelected ? Colors.white : Colors.transparent,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+              children: [
+                tabButton(
+                  label: 'Home',
+                  selected: false,
+                  onPressed: () => context.go('/home'),
+                ),
+                tabButton(
+                  label: 'Al-Quran',
+                  selected: currentIndex == 0,
+                  onPressed: () => onTap(0),
+                ),
+                tabButton(
+                  label: 'Latihan',
+                  selected: currentIndex == 1,
+                  onPressed: () => onTap(1),
+                ),
+                tabButton(
+                  label: 'Target',
+                  selected: currentIndex == 2,
+                  onPressed: () => onTap(2),
+                ),
+              ],
             ),
           ),
-
-          // Right Profile Icon
+          IconButton(
+            onPressed: () => context.go('/home'),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: const Icon(Icons.home_rounded,
+                color: Color(0xFF2F594E), size: 24),
+          ),
+          const SizedBox(width: 6),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.only(right: 10),
             child: IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.white, size: 30),
-              onPressed: () {
-                // Open user profile
-              },
+              onPressed: () => context.go('/dashboard'),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(
+                Icons.account_circle,
+                color: Color(0xFF2F594E),
+                size: 30,
+              ),
             ),
           ),
         ],
