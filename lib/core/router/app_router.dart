@@ -2,24 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/activity/activity.dart';
-import '../../features/community/community.dart';
 import '../../features/dashboard/dashboard.dart';
-import '../../features/goals/goals.dart';
-import '../../features/memorization/memorization.dart';
-import '../../features/quran/read.dart';
+import '../../features/alquran/alquran.dart';
+import '../../features/latihan/latihan.dart';
+import '../../features/target/target.dart';
 import '../../shared/widgets/main_scaffold.dart';
-
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
-    initialLocation: '/read',
+    initialLocation: '/alquran',
     routes: [
       GoRoute(
-        path: '/read',
-        builder: (context, state) => const QuranReadScreen(),
+        path: '/dashboard',
+        builder: (context, state) => const DashboardScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -29,40 +24,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/dashboard',
-                builder: (context, state) => const DashboardScreen(),
+                path: '/alquran',
+                builder: (context, state) => const AlQuranScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/goals',
-                builder: (context, state) => const GoalsScreen(),
+                path: '/latihan',
+                builder: (context, state) => const LatihanScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/memorization',
-                builder: (context, state) => const MemorizationScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/activity',
-                builder: (context, state) => const ActivityScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/community',
-                builder: (context, state) => const CommunityScreen(),
+                path: '/target',
+                builder: (context, state) => const TargetScreen(),
               ),
             ],
           ),

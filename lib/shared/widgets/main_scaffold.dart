@@ -20,22 +20,11 @@ class MainScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.go('/read'),
-        ),
-        title: const Text('MyAlQuran', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () {},
-          )
-        ],
-      ),
+      backgroundColor: Colors.white,
+      // Removed the built-in appBar completely to use a custom single bar.
       body: Column(
         children: [
-          _TopTabBar(
+          _FullTopNavBar(
             currentIndex: navigationShell.currentIndex,
             onTap: _onTap,
           ),
@@ -46,69 +35,89 @@ class MainScaffold extends StatelessWidget {
   }
 }
 
-class _TopTabBar extends StatelessWidget {
+class _FullTopNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _TopTabBar({
+  const _FullTopNavBar({
     required this.currentIndex,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final tabs = ['Dashboard', 'Goals', 'Memory', 'Activity', 'Community'];
-    
+    final tabs = ['Al-Quran', 'Latihan', 'Target'];
+    final topPadding = MediaQuery.of(context).padding.top;
+
     return Container(
-      color: AppTheme.background,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      height: 50,
-      child: Stack(
+      // The navbar background should be the mosque color (accentGreen)
+      color: AppTheme.accentGreen,
+      padding: EdgeInsets.only(top: topPadding),
+      // 60 height + status bar padding
+      height: 65 + topPadding,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 1,
-              color: Colors.white.withAlpha(25),
+          // Left Logo (Mosque - White)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: IconButton(
+              icon: const Icon(Icons.mosque, color: Colors.white, size: 28),
+              onPressed: () {
+                context.push('/dashboard');
+              },
             ),
           ),
-          ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: tabs.length,
-            itemBuilder: (context, index) {
-              final isSelected = currentIndex == index;
-              return GestureDetector(
-                onTap: () => onTap(index),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Center(
+          
+          // Center Navigation Tabs
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(tabs.length, (index) {
+                final isSelected = currentIndex == index;
+                return GestureDetector(
+                  onTap: () => onTap(index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const SizedBox(height: 12), // offset push down
                         Text(
                           tabs[index],
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.grey,
+                            // Unselected is slightly faded white, selected is pure white + bold
+                            color: isSelected ? Colors.white : Colors.white70,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 16,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 6),
                         Container(
                           height: 3,
                           width: 40,
                           decoration: BoxDecoration(
-                            color: isSelected ? AppTheme.accentGreen : Colors.transparent,
+                            color: isSelected ? Colors.white : Colors.transparent,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              }),
+            ),
+          ),
+
+          // Right Profile Icon
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: IconButton(
+              icon: const Icon(Icons.account_circle, color: Colors.white, size: 30),
+              onPressed: () {
+                // Open user profile
+              },
+            ),
           ),
         ],
       ),

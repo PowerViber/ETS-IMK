@@ -16,7 +16,7 @@ class ModernHabitApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'MyAlQuran',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
