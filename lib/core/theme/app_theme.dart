@@ -17,7 +17,6 @@ class AppTheme {
         primary: accentGreen,
         secondary: accentBlue,
         surface: surface,
-        background: background,
       ),
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.dark().textTheme,

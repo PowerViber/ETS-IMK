@@ -21,7 +21,11 @@ class MainScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modern Habit', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.go('/read'),
+        ),
+        title: const Text('MyAlQuran', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
@@ -67,7 +71,7 @@ class _TopTabBar extends StatelessWidget {
             right: 0,
             child: Container(
               height: 1,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withAlpha(25),
             ),
           ),
           ListView.builder(

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/activity/presentation/activity_screen.dart';
-import '../../features/community/presentation/community_screen.dart';
-import '../../features/dashboard/presentation/dashboard_screen.dart';
-import '../../features/goals/presentation/goals_screen.dart';
-import '../../features/memorization/presentation/memorization_screen.dart';
+import '../../features/activity/activity.dart';
+import '../../features/community/community.dart';
+import '../../features/dashboard/dashboard.dart';
+import '../../features/goals/goals.dart';
+import '../../features/memorization/memorization.dart';
+import '../../features/quran/read.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -14,8 +15,12 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/dashboard',
+    initialLocation: '/read',
     routes: [
+      GoRoute(
+        path: '/read',
+        builder: (context, state) => const QuranReadScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScaffold(navigationShell: navigationShell);
