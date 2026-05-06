@@ -22,7 +22,7 @@ class TargetItem {
     bool? isCompleted,
   }) {
     return TargetItem(
-      id: this.id, // ID explicitly remains the same
+      id: id, // ID explicitly remains the same
       title: title ?? this.title,
       description: description ?? this.description,
       date: date ?? this.date,

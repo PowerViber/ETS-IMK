@@ -12,12 +12,87 @@ class TargetScreen extends ConsumerStatefulWidget {
 
 class _TargetScreenState extends ConsumerState<TargetScreen> {
   DateTime _newTargetDate = DateTime.now();
+  final List<String> _activityLogs = [];
 
   DateTime _normalize(DateTime value) {
     return DateTime(value.year, value.month, value.day);
   }
 
+  String _formatTime(DateTime value) {
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  void _recordActivity(String message) {
+    final timestamp = _formatTime(DateTime.now());
+    setState(() {
+      _activityLogs.insert(0, '$timestamp - $message');
+      if (_activityLogs.length > 5) {
+        _activityLogs.removeLast();
+      }
+    });
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
+  Future<void> _confirmDelete(TargetItem item) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Hapus Target?'),
+          content: Text(
+            'Target "${item.title}" akan dihapus dari daftar. Aksi ini tidak dapat dibatalkan.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFB94A48),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true) {
+      ref.read(targetProvider.notifier).deleteTarget(item.id);
+      _recordActivity('Target "${item.title}" dihapus');
+      _showSnackBar('Target berhasil dihapus');
+    }
+  }
+
+  void _toggleCompletion(TargetItem item) {
+    ref.read(targetProvider.notifier).toggleCompletion(item.id);
+    _recordActivity(
+      item.isCompleted
+          ? 'Target "${item.title}" dikembalikan'
+          : 'Target "${item.title}" dipindahkan ke arsip',
+    );
+    _showSnackBar(
+      item.isCompleted ? 'Target dikembalikan' : 'Target dipindahkan ke arsip',
+    );
+  }
+
   void _showTargetSheet({TargetItem? item}) {
+    final isEditing = item != null;
     final titleController = TextEditingController(text: item?.title ?? '');
     final descController = TextEditingController(text: item?.description ?? '');
     final selectedDate = item?.date ?? _newTargetDate;
@@ -48,9 +123,9 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Tambah Target Baru',
-                      style: TextStyle(
+                    Text(
+                      isEditing ? 'Edit Target' : 'Tambah Target Baru',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF23483F),
@@ -146,17 +221,37 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                           final title = titleController.text.trim();
                           final desc = descController.text.trim();
                           if (title.isEmpty) {
+                            _showSnackBar('Judul target tidak boleh kosong');
                             return;
                           }
-                          ref.read(targetProvider.notifier).addTarget(
-                                title,
-                                desc,
-                                localDate,
-                              );
+                          if (isEditing) {
+                            ref.read(targetProvider.notifier).updateTarget(
+                                  item.id,
+                                  title,
+                                  desc,
+                                  localDate,
+                                );
+                          } else {
+                            ref.read(targetProvider.notifier).addTarget(
+                                  title,
+                                  desc,
+                                  localDate,
+                                );
+                          }
                           setState(() {
                             _newTargetDate = localDate;
                           });
                           Navigator.pop(context);
+                          _recordActivity(
+                            isEditing
+                                ? 'Target "$title" diperbarui'
+                                : 'Target "$title" ditambahkan',
+                          );
+                          _showSnackBar(
+                            isEditing
+                                ? 'Target berhasil diperbarui'
+                                : 'Target berhasil ditambahkan',
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF63B295),
@@ -167,9 +262,9 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text(
-                          'Simpan Target',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        child: Text(
+                          isEditing ? 'Simpan Perubahan' : 'Simpan Target',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -186,7 +281,6 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
   @override
   Widget build(BuildContext context) {
     final allTargets = ref.watch(targetProvider);
-    final notifier = ref.read(targetProvider.notifier);
     final today = _normalize(DateTime.now());
 
     final todayTargets = allTargets
@@ -248,8 +342,8 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                 child: _TargetCard(
                   item: item,
                   onEdit: () => _showTargetSheet(item: item),
-                  onToggleDone: () => notifier.toggleCompletion(item.id),
-                  onDelete: () => notifier.deleteTarget(item.id),
+                  onToggleDone: () => _toggleCompletion(item),
+                  onDelete: () => _confirmDelete(item),
                 ),
               ),
             ),
@@ -273,8 +367,8 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                   child: _TargetCard(
                     item: item,
                     onEdit: () => _showTargetSheet(item: item),
-                    onToggleDone: () => notifier.toggleCompletion(item.id),
-                    onDelete: () => notifier.deleteTarget(item.id),
+                    onToggleDone: () => _toggleCompletion(item),
+                    onDelete: () => _confirmDelete(item),
                   ),
                 ),
               ),
@@ -296,12 +390,21 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: _TargetCard(
                     item: item,
-                    onEdit: () => _showTargetSheet(item: item),
-                    onToggleDone: () => notifier.toggleCompletion(item.id),
-                    onDelete: () => notifier.deleteTarget(item.id),
+                    onDelete: () => _confirmDelete(item),
                   ),
                 ),
               ),
+            const SizedBox(height: 14),
+            const Text(
+              'Riwayat Aktivitas',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF234B41),
+              ),
+            ),
+            const SizedBox(height: 8),
+            _ActivityLogCard(logs: _activityLogs),
           ],
         ),
       ),
@@ -312,15 +415,15 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
 class _TargetCard extends StatelessWidget {
   const _TargetCard({
     required this.item,
-    required this.onEdit,
-    required this.onToggleDone,
     required this.onDelete,
+    this.onEdit,
+    this.onToggleDone,
   });
 
   final TargetItem item;
-  final VoidCallback onEdit;
-  final VoidCallback onToggleDone;
   final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onToggleDone;
 
   @override
   Widget build(BuildContext context) {
@@ -369,15 +472,15 @@ class _TargetCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF63B295),
+                    color: const Color(0xFFB9C9C3),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: const Text(
-                    'Mulai Sesi',
+                    'Sesi belum tersedia',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFEAF5F1),
+                      color: Color(0xFF315B50),
                     ),
                   ),
                 ),
@@ -386,18 +489,21 @@ class _TargetCard extends StatelessWidget {
           ),
           Column(
             children: [
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                iconSize: 18,
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, color: Color(0xFF315B50)),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                iconSize: 18,
-                onPressed: onToggleDone,
-                icon: const Icon(Icons.task_alt, color: Color(0xFF315B50)),
-              ),
+              if (onEdit != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 18,
+                  onPressed: onEdit,
+                  icon:
+                      const Icon(Icons.edit_outlined, color: Color(0xFF315B50)),
+                ),
+              if (onToggleDone != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 18,
+                  onPressed: onToggleDone,
+                  icon: const Icon(Icons.task_alt, color: Color(0xFF315B50)),
+                ),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 iconSize: 18,
@@ -441,6 +547,57 @@ class _EmptySectionCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ActivityLogCard extends StatelessWidget {
+  const _ActivityLogCard({required this.logs});
+
+  final List<String> logs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD3DFDB),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x22000000),
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: logs.isEmpty
+          ? const Text(
+              'Belum ada aktivitas target',
+              style: TextStyle(
+                color: Color(0xFF4C6960),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final log in logs) ...[
+                  Text(
+                    log,
+                    style: const TextStyle(
+                      color: Color(0xFF32564D),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                    ),
+                  ),
+                  if (log != logs.last) const SizedBox(height: 6),
+                ],
+              ],
+            ),
     );
   }
 }

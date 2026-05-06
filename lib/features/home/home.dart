@@ -46,16 +46,16 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              'Cari surat atau ayat ...',
+                              'Pencarian belum tersedia',
                               style: TextStyle(
-                                color: Color(0xFF9BA9A4),
+                                color: Color(0xFF7C8B86),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
-                          Icon(Icons.search,
-                              color: Color(0xFF335C52), size: 18),
+                          Icon(Icons.search_off,
+                              color: Color(0xFF7C8B86), size: 18),
                         ],
                       ),
                     ),
@@ -211,17 +211,34 @@ class _HomeTopBar extends StatelessWidget {
         onTap: () => context.go(path),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 7),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                width: isActive ? 18 : 0,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
+
+    final isHomeActive = currentPath == '/home';
 
     return Container(
       height: 56,
@@ -256,8 +273,11 @@ class _HomeTopBar extends StatelessWidget {
             onPressed: () => context.go('/home'),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: const Icon(Icons.home_rounded,
-                color: Color(0xFF2F594E), size: 24),
+            icon: Icon(
+              Icons.home_rounded,
+              color: isHomeActive ? Colors.white : const Color(0xFF2F594E),
+              size: 24,
+            ),
           ),
           const SizedBox(width: 6),
           IconButton(

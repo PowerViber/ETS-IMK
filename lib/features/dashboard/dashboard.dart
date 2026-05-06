@@ -35,10 +35,11 @@ class DashboardScreen extends ConsumerWidget {
             fontSize: 20,
           ),
         ),
-        actions: [
+        actions: const [
           IconButton(
-            icon: const Icon(Icons.search, color: Color(0xFF2F3A43)),
-            onPressed: () {},
+            tooltip: 'Pencarian belum tersedia',
+            icon: Icon(Icons.search_off),
+            onPressed: null,
           ),
         ],
       ),

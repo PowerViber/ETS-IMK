@@ -122,15 +122,51 @@ Aplikasi IQRA' sudah sebagian memenuhi requirement mental model dan representasi
 
 Target yang perlu ditempuh agar aplikasi lebih memenuhi prinsip mental model:
 
-- [ ] Memperbaiki fitur edit target agar menyimpan perubahan pada target lama, bukan membuat target baru.
-- [ ] Menambahkan feedback eksplisit setelah aksi tambah, edit, hapus, dan tandai selesai target.
-- [ ] Menambahkan dialog konfirmasi sebelum target dihapus untuk mencegah action-based slip.
+- [x] Memperbaiki fitur edit target agar menyimpan perubahan pada target lama, bukan membuat target baru.
+- [x] Menambahkan feedback eksplisit setelah aksi tambah, edit, hapus, dan tandai selesai target.
+- [x] Menambahkan dialog konfirmasi sebelum target dihapus untuk mencegah action-based slip.
 - [ ] Menghubungkan progress, streak, dan target harian di Home/Dashboard dengan data nyata.
-- [ ] Memberikan state jelas pada fitur yang belum aktif, seperti Search, Mulai Latihan, dan Mulai Sesi.
-- [ ] Menambahkan riwayat aktivitas atau log sederhana agar pengguna dapat memahami urutan aksi yang membentuk kondisi saat ini.
-- [ ] Memperjelas active state pada navigasi agar pengguna selalu tahu sedang berada di halaman apa.
+- [x] Memberikan state jelas pada fitur yang belum aktif, seperti Search, Mulai Latihan, dan Mulai Sesi.
+- [x] Menambahkan riwayat aktivitas atau log sederhana agar pengguna dapat memahami urutan aksi yang membentuk kondisi saat ini.
+- [x] Memperjelas active state pada navigasi agar pengguna selalu tahu sedang berada di halaman apa.
 - [ ] Menyediakan hasil latihan, skor, atau riwayat latihan agar halaman Latihan memiliki feedback cycle yang kuat.
 - [ ] Menambahkan penanda progress baca atau posisi terakhir pada halaman Al-Quran.
 - [ ] Menyederhanakan istilah atau memberi konteks pada konsep seperti dashboard, streak, progress, dan sesi agar tidak bergantung pada asumsi expert.
 
 Jika target-target tersebut dipenuhi, aplikasi akan lebih mampu "mengajari" pengguna cara kerja sistem melalui antarmuka, sesuai prinsip bahwa designer berperan sebagai educator.
+
+## 9. Perubahan - target.dart (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/target/target.dart` | Form target dibuat dinamis untuk mode tambah dan edit. Judul sheet berubah menjadi `Tambah Target Baru` atau `Edit Target`, dan tombol berubah menjadi `Simpan Target` atau `Simpan Perubahan`. | Label dan perilaku menjadi cocok. Pengguna yang memilih edit akan melihat konteks edit dan sistem benar-benar memperbarui target lama, bukan membuat target baru. |
+| `lib/features/target/target.dart` | Validasi judul kosong sekarang menampilkan snackbar `Judul target tidak boleh kosong` dan sheet tidak ditutup. | Feedback cycle menjadi lebih jelas karena pengguna langsung tahu mengapa aksi simpan tidak berjalan. |
+| `lib/features/target/target.dart` | Aksi tambah, edit, tandai selesai, kembalikan target, dan hapus target menampilkan snackbar berhasil. | Pengguna mendapat feedback eksplisit setelah melakukan aksi, sehingga hubungan input-output lebih mudah dipahami. |
+| `lib/features/target/target.dart` | Aksi hapus target sekarang membuka dialog konfirmasi `Hapus Target?` dengan pilihan `Batal` dan `Hapus`. | Mengurangi action-based slip karena target tidak langsung hilang saat ikon delete tidak sengaja ditekan. |
+| `lib/features/target/target.dart` | `_TargetCard` menerima `onEdit` dan `onToggleDone` secara opsional, sehingga target yang sudah diarsipkan dapat hanya menampilkan aksi hapus. | UI lebih sesuai dengan status target. Target arsip tidak lagi menampilkan aksi yang tidak tersedia, dan error analyzer akibat callback wajib hilang. |
+| `lib/features/target/target.dart` | Chip kosong/aksi `Mulai Sesi` diganti menjadi label non-aksi `Sesi belum tersedia`. | Mencegah learned helplessness karena pengguna tidak melihat tombol aktif yang belum menjalankan fitur nyata. |
+| `lib/features/target/target_provider.dart` | Menambahkan method `updateTarget(id, title, description, date)` yang mempertahankan `id` dan `isCompleted`. | Mendukung mental model bahwa edit berarti memperbarui data lama, bukan membuat data baru. |
+| `lib/features/target/target_model.dart` | Merapikan `copyWith` agar mempertahankan `id` tanpa qualifier `this.` yang tidak perlu. | Menghilangkan warning analyzer dan menjaga model data tetap stabil saat target diperbarui. |
+
+## 10. Perubahan - State Fitur Belum Aktif (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/home/home.dart` | Placeholder search `Cari surat atau ayat ...` diganti menjadi `Pencarian belum tersedia` dan ikon diganti menjadi `search_off`. | Pengguna tidak lagi mengira kolom pencarian sudah bisa digunakan. Ini meningkatkan predictability karena representasi visual sesuai dengan status fitur. |
+| `lib/features/dashboard/dashboard.dart` | Ikon search pada app bar diganti menjadi `search_off`, diberi tooltip `Pencarian belum tersedia`, dan `onPressed` dibuat `null`. | Aksi yang belum tersedia tampil sebagai disabled action, sehingga mengurangi knowledge-based mistake dan learned helplessness. |
+| `lib/features/latihan/latihan.dart` | Label chip `Mulai Latihan` pada kartu Tebak Surah dan Sambung Ayat diganti menjadi `Segera tersedia`, dengan warna chip non-aksi. | Pengguna memahami bahwa latihan belum bisa dimulai, bukan tombol yang gagal merespons. Ini memperbaiki feedback ekspektasi sebelum fitur latihan penuh dibangun. |
+
+## 11. Perubahan - Riwayat Aktivitas Target (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/target/target.dart` | Menambahkan state `_activityLogs` untuk menyimpan maksimal 5 aktivitas terbaru pada layar Target. | Pengguna dapat melihat urutan aksi yang baru dilakukan, sehingga kondisi sistem saat ini lebih mudah dipahami. |
+| `lib/features/target/target.dart` | Menambahkan helper `_recordActivity(...)` dengan timestamp jam dan menit. Helper ini dipanggil saat target ditambah, diedit, dipindahkan ke arsip, dikembalikan, dan dihapus. | Memperkuat synthesizability karena pengguna dapat menelusuri perubahan terakhir tanpa harus mengingat semua aksi sendiri. |
+| `lib/features/target/target.dart` | Menambahkan section `Riwayat Aktivitas` di bawah `Diarsipkan`, termasuk empty state `Belum ada aktivitas target`. | Sistem memberi representasi eksplisit terhadap riwayat aksi. Empty state juga membantu pengguna memahami bahwa belum ada aktivitas, bukan data gagal dimuat. |
+
+## 12. Perubahan - Active State Navigasi (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/shared/widgets/main_scaffold.dart` | Tab Al-Quran, Latihan, dan Target sekarang menampilkan teks lebih tebal dan underline putih ketika aktif. | Pengguna lebih mudah mengetahui halaman shell yang sedang dibuka, sehingga konsistensi navigasi meningkat. |
+| `lib/features/home/home.dart` | Tab pada top bar Home memakai underline ketika route aktif, dan ikon Home berubah putih saat berada di `/home`. | Mengurangi kebingungan antara Home dan halaman lain karena posisi pengguna diberi visual cue yang jelas. |

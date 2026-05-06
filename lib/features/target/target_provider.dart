@@ -30,6 +30,24 @@ class TargetNotifier extends StateNotifier<List<TargetItem>> {
     }).toList();
   }
 
+  void updateTarget(
+    String id,
+    String title,
+    String description,
+    DateTime date,
+  ) {
+    state = state.map((item) {
+      if (item.id == id) {
+        return item.copyWith(
+          title: title,
+          description: description,
+          date: _normalizeDate(date),
+        );
+      }
+      return item;
+    }).toList();
+  }
+
   // Delete
   void deleteTarget(String id) {
     state = state.where((item) => item.id != id).toList();
@@ -41,6 +59,7 @@ class TargetNotifier extends StateNotifier<List<TargetItem>> {
   }
 }
 
-final targetProvider = StateNotifierProvider<TargetNotifier, List<TargetItem>>((ref) {
+final targetProvider =
+    StateNotifierProvider<TargetNotifier, List<TargetItem>>((ref) {
   return TargetNotifier();
 });

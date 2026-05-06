@@ -24,14 +24,14 @@ class LatihanScreen extends StatelessWidget {
             const _LatihanCard(
               title: 'Tebak Surah',
               subtitle: 'Latih hafalan nama surah dengan kuis cepat.',
-              buttonLabel: 'Mulai Latihan',
+              buttonLabel: 'Segera tersedia',
               icon: Icons.quiz,
             ),
             const SizedBox(height: 10),
             const _LatihanCard(
               title: 'Sambung Ayat',
               subtitle: 'Lanjutkan potongan ayat untuk menguji hafalan.',
-              buttonLabel: 'Mulai Latihan',
+              buttonLabel: 'Segera tersedia',
               icon: Icons.menu_book,
             ),
             const SizedBox(height: 16),
@@ -144,7 +144,7 @@ class _LatihanCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF63B295),
+                    color: const Color(0xFFB9C9C3),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -152,7 +152,7 @@ class _LatihanCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFEAF5F1),
+                      color: Color(0xFF315B50),
                     ),
                   ),
                 ),
