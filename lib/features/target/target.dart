@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme/app_theme.dart';
 import 'target_model.dart';
 import 'target_provider.dart';
 
@@ -116,7 +117,7 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8EFEC),
+                  color: context.appSurface,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -125,10 +126,10 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                   children: [
                     Text(
                       isEditing ? 'Edit Target' : 'Tambah Target Baru',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF23483F),
+                        color: context.appTextPrimary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -137,7 +138,7 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                       decoration: InputDecoration(
                         hintText: 'Judul target',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: context.appBackground,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 10,
@@ -161,7 +162,7 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                       decoration: InputDecoration(
                         hintText: 'Deskripsi target',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: context.appBackground,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 10,
@@ -199,16 +200,16 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.appBackground,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: const Color(0xFFC7D8D1)),
                         ),
                         child: Text(
                           'Tanggal: ${localDate.day}/${localDate.month}/${localDate.year}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF32564D),
+                            color: context.appTextPrimary,
                           ),
                         ),
                       ),
@@ -292,50 +293,71 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
     final archivedTargets = allTargets.where((t) => t.isCompleted).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F1F1),
+      backgroundColor: context.appBackground,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(12, 16, 12, 22),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Target',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: context.appTextPrimary,
+                height: 1.05,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Atur rencana belajar dan pantau statusnya.',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: context.appTextSecondary,
+              ),
+            ),
+            const SizedBox(height: 18),
             GestureDetector(
               onTap: _showTargetSheet,
               child: Container(
                 width: double.infinity,
-                height: 50,
+                height: 56,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCEE0DA),
-                  borderRadius: BorderRadius.circular(10),
+                  color: const Color(0xFF166D56),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x22000000),
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
+                      color: Color(0x240B5A45),
+                      blurRadius: 18,
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    'MULAI TARGET BARU   +',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF355D52),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_circle_outline,
+                        color: Colors.white, size: 22),
+                    SizedBox(width: 8),
+                    Text(
+                      'Mulai Target Baru',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 18),
-            const Text(
-              'Target Hari Ini',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF234B41),
-              ),
+            const SizedBox(height: 24),
+            const _TargetSectionHeader(
+              title: 'Target Hari Ini',
+              subtitle: 'Hal yang perlu diselesaikan sebelum hari berakhir.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             ...todayTargets.map(
               (item) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -347,19 +369,25 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                 ),
               ),
             ),
-            if (todayTargets.isEmpty) const _EmptySectionCard(),
-            const SizedBox(height: 14),
-            const Text(
-              'Target Mendatang',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF234B41),
+            if (todayTargets.isEmpty)
+              const _EmptySectionCard(
+                icon: Icons.today_outlined,
+                title: 'Belum ada target hari ini',
+                subtitle: 'Tambahkan target baru untuk memulai rutinitas.',
               ),
+            const SizedBox(height: 18),
+            const _TargetSectionHeader(
+              title: 'Target Mendatang',
+              subtitle: 'Rencana yang sudah dijadwalkan setelah hari ini.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             if (upcomingTargets.isEmpty)
-              const _EmptySectionCard()
+              const _EmptySectionCard(
+                icon: Icons.event_available_outlined,
+                title: 'Belum ada target mendatang',
+                subtitle:
+                    'Target dengan tanggal berikutnya akan muncul di sini.',
+              )
             else
               ...upcomingTargets.map(
                 (item) => Padding(
@@ -372,18 +400,18 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                   ),
                 ),
               ),
-            const SizedBox(height: 14),
-            const Text(
-              'Diarsipkan',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF234B41),
-              ),
+            const SizedBox(height: 18),
+            const _TargetSectionHeader(
+              title: 'Diarsipkan',
+              subtitle: 'Target yang sudah selesai tersimpan di sini.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             if (archivedTargets.isEmpty)
-              const _EmptySectionCard()
+              const _EmptySectionCard(
+                icon: Icons.inventory_2_outlined,
+                title: 'Belum ada arsip',
+                subtitle: 'Target selesai akan otomatis masuk ke arsip.',
+              )
             else
               ...archivedTargets.map(
                 (item) => Padding(
@@ -394,16 +422,12 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
                   ),
                 ),
               ),
-            const SizedBox(height: 14),
-            const Text(
-              'Riwayat Aktivitas',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF234B41),
-              ),
+            const SizedBox(height: 18),
+            const _TargetSectionHeader(
+              title: 'Riwayat Aktivitas',
+              subtitle: 'Aksi terbaru yang membentuk kondisi target saat ini.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             _ActivityLogCard(logs: _activityLogs),
           ],
         ),
@@ -428,15 +452,16 @@ class _TargetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFD3DFDB),
-        borderRadius: BorderRadius.circular(12),
+        color: context.appSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.appBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 6,
-            offset: Offset(0, 3),
+            color: Color(0x12000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -450,9 +475,9 @@ class _TargetCard extends StatelessWidget {
                 Text(
                   item.title,
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF234B41),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: context.appTextPrimary,
                     decoration:
                         item.isCompleted ? TextDecoration.lineThrough : null,
                   ),
@@ -461,10 +486,11 @@ class _TargetCard extends StatelessWidget {
                 if (item.description.isNotEmpty)
                   Text(
                     item.description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF3A5C53),
+                      color: context.appTextSecondary,
+                      height: 1.25,
                     ),
                   ),
                 const SizedBox(height: 8),
@@ -495,20 +521,21 @@ class _TargetCard extends StatelessWidget {
                   iconSize: 18,
                   onPressed: onEdit,
                   icon:
-                      const Icon(Icons.edit_outlined, color: Color(0xFF315B50)),
+                      const Icon(Icons.edit_outlined, color: Color(0xFF166D56)),
                 ),
               if (onToggleDone != null)
                 IconButton(
                   visualDensity: VisualDensity.compact,
                   iconSize: 18,
                   onPressed: onToggleDone,
-                  icon: const Icon(Icons.task_alt, color: Color(0xFF315B50)),
+                  icon: const Icon(Icons.task_alt, color: Color(0xFF166D56)),
                 ),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 iconSize: 18,
                 onPressed: onDelete,
-                icon: const Icon(Icons.delete, color: Color(0xFF315B50)),
+                icon:
+                    const Icon(Icons.delete_outline, color: Color(0xFF9A4B46)),
               ),
             ],
           ),
@@ -518,34 +545,110 @@ class _TargetCard extends StatelessWidget {
   }
 }
 
+class _TargetSectionHeader extends StatelessWidget {
+  const _TargetSectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: context.appTextPrimary,
+            height: 1.15,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: context.appTextSecondary,
+            height: 1.25,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _EmptySectionCard extends StatelessWidget {
-  const _EmptySectionCard();
+  const _EmptySectionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 112,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFD3DFDB),
-        borderRadius: BorderRadius.circular(12),
+        color: context.appSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.appBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 6,
-            offset: Offset(0, 3),
+            color: Color(0x12000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      child: const Center(
-        child: Text(
-          'Tidak Ada',
-          style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF4C6960),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: context.appSoftSurface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF166D56), size: 20),
           ),
-        ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: context.appTextPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: context.appTextSecondary,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -562,21 +665,22 @@ class _ActivityLogCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFD3DFDB),
-        borderRadius: BorderRadius.circular(12),
+        color: context.appSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.appBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 6,
-            offset: Offset(0, 3),
+            color: Color(0x12000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: logs.isEmpty
-          ? const Text(
+          ? Text(
               'Belum ada aktivitas target',
               style: TextStyle(
-                color: Color(0xFF4C6960),
+                color: context.appTextSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -587,8 +691,8 @@ class _ActivityLogCard extends StatelessWidget {
                 for (final log in logs) ...[
                   Text(
                     log,
-                    style: const TextStyle(
-                      color: Color(0xFF32564D),
+                    style: TextStyle(
+                      color: context.appTextPrimary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       height: 1.3,

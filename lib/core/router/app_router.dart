@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/dashboard/dashboard.dart';
 import '../../features/alquran/alquran.dart';
+import '../../features/alquran/juz_document.dart';
+import '../../features/alquran/juz_reader.dart';
 import '../../features/home/home.dart';
 import '../../features/latihan/latihan.dart';
 import '../../features/target/target.dart';
@@ -30,6 +32,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/alquran',
                 builder: (context, state) => const AlQuranScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'juz/:number',
+                    builder: (context, state) {
+                      final juzNumber =
+                          int.tryParse(state.pathParameters['number'] ?? '');
+                      final document =
+                          juzNumber == null ? null : findJuzDocument(juzNumber);
+
+                      if (document == null) {
+                        return const AlQuranScreen();
+                      }
+
+                      return JuzReaderScreen(document: document);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
