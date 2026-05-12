@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_mode_provider.dart';
 import '../target/target_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -13,24 +15,26 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final targets = ref.watch(targetProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
     final today = _normalize(DateTime.now());
     final todayTargets =
         targets.where((t) => _normalize(t.date) == today).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: context.appBackground,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF3F4F6),
+        backgroundColor: context.appBackground,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2F3A43)),
+          icon: Icon(Icons.arrow_back, color: context.appTextPrimary),
           onPressed: () => context.go('/home'),
         ),
-        title: const Text(
+        title: Text(
           'Dashboard',
           style: TextStyle(
-            color: Color(0xFF2F3A43),
+            color: context.appTextPrimary,
             fontWeight: FontWeight.w500,
             fontSize: 20,
           ),
@@ -44,77 +48,103 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 22),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Assalamu Alaikum,',
               style: TextStyle(
-                color: Color(0xFF66717C),
-                fontSize: 26,
-                fontWeight: FontWeight.w500,
+                color: context.appTextSecondary,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 2),
-            const Text(
+            Text(
               'Ahmad',
               style: TextStyle(
-                color: Color(0xFF1E2933),
-                fontSize: 48,
-                fontWeight: FontWeight.w700,
+                color: context.appTextPrimary,
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: const Color(0xFF0B8A63),
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFF166D56),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x22000000),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
+                    color: Color(0x240B5A45),
+                    blurRadius: 18,
+                    offset: Offset(0, 8),
                   ),
                 ],
               ),
-              child: const Row(
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.local_fire_department,
-                      color: Color(0xFFE3F7EF), size: 42),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'ayo mulai streakmu sekarang juga!',
-                      style: TextStyle(
-                        color: Color(0xFFE3F7EF),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    children: [
+                      Icon(Icons.local_fire_department,
+                          color: Color(0xFFFFD166), size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        'Weekly Focus',
+                        style: TextStyle(
+                          color: Color(0xFFDCEEE8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Jaga ritme belajarmu.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Selesaikan target hari ini agar streak terasa nyata.',
+                    style: TextStyle(
+                      color: Color(0xFFDCEEE8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      height: 1.25,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Weekly Streak',
-              style: TextStyle(
-                color: Color(0xFF1E2933),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+            const SizedBox(height: 22),
+            _ThemeModePanel(
+              enabled: isDarkMode,
+              onChanged: (value) {
+                ref.read(themeModeProvider.notifier).state =
+                    value ? ThemeMode.dark : ThemeMode.light;
+              },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
+            const _DashboardSectionHeader(
+              title: 'Weekly Streak',
+              subtitle: 'Snapshot kebiasaan selama tujuh hari.',
+            ),
+            const SizedBox(height: 10),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFA),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE5EAEE)),
+                color: context.appSurface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: context.appBorder),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,40 +159,36 @@ class DashboardScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-            const Text(
-              'Target Hari ini',
-              style: TextStyle(
-                color: Color(0xFF1E2933),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+            const SizedBox(height: 18),
+            const _DashboardSectionHeader(
+              title: 'Target Hari Ini',
+              subtitle: 'Prioritas yang sedang aktif pada tanggal ini.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             if (todayTargets.isEmpty)
               GestureDetector(
                 onTap: () => context.go('/target'),
                 child: Container(
                   width: double.infinity,
-                  height: 54,
+                  height: 56,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border:
-                        Border.all(color: const Color(0xFF66B8A0), width: 2),
+                    color: context.appSurface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF63B295)),
                   ),
                   child: const Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.add_circle_outline,
-                            color: Color(0xFF169974), size: 20),
+                            color: Color(0xFF166D56), size: 20),
                         SizedBox(width: 8),
                         Text(
                           'Mulai Target Baru',
                           style: TextStyle(
-                            color: Color(0xFF169974),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                            color: Color(0xFF166D56),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
                           ),
                         ),
                       ],
@@ -177,52 +203,170 @@ class DashboardScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFA),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE5EAEE)),
+                    color: context.appSurface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: context.appBorder),
                   ),
-                  child: Text(
-                    item.title,
-                    style: const TextStyle(
-                      color: Color(0xFF1E2933),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle_outline,
+                          color: Color(0xFF166D56), size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          item.title,
+                          style: TextStyle(
+                            color: context.appTextPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            const SizedBox(height: 14),
-            const Text(
-              'Progress',
-              style: TextStyle(
-                color: Color(0xFF1E2933),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+            const SizedBox(height: 18),
+            const _DashboardSectionHeader(
+              title: 'Progress',
+              subtitle: 'Ringkasan akan muncul ketika aktivitas bertambah.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Container(
               width: double.infinity,
-              height: 86,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFA),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE5EAEE)),
+                color: context.appSurface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: context.appBorder),
               ),
-              child: const Center(
-                child: Text(
-                  'Belum ada progress',
-                  style: TextStyle(
-                    color: Color(0xFF87939D),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+              child: const Row(
+                children: [
+                  Icon(Icons.insights_outlined,
+                      color: Color(0xFF166D56), size: 22),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Belum ada progress terukur.',
+                      style: TextStyle(
+                        color: Color(0xFF6B8079),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ThemeModePanel extends StatelessWidget {
+  const _ThemeModePanel({
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: context.appSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.appBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: context.appSoftSurface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              enabled ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+              color: const Color(0xFF166D56),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mode Gelap',
+                  style: TextStyle(
+                    color: context.appTextPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  enabled
+                      ? 'Tampilan redup aktif untuk sesi malam.'
+                      : 'Aktifkan tampilan redup untuk sesi malam.',
+                  style: TextStyle(
+                    color: context.appTextSecondary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: enabled,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardSectionHeader extends StatelessWidget {
+  const _DashboardSectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: context.appTextPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: TextStyle(
+            color: context.appTextSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -256,7 +400,7 @@ class _StreakItem extends StatelessWidget {
         Text(
           day,
           style: TextStyle(
-            color: done ? const Color(0xFF1AAA7E) : const Color(0xFF6A7480),
+            color: done ? const Color(0xFF1AAA7E) : context.appTextSecondary,
             fontSize: 11,
             fontWeight: FontWeight.w700,
           ),

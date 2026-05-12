@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+
+import '../../core/theme/app_theme.dart';
+
+class JuzPdfViewer extends StatelessWidget {
+  const JuzPdfViewer({
+    super.key,
+    required this.assetPath,
+  });
+
+  final String assetPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: context.appSurface,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
+      child: Text(
+        'Preview PDF tersedia pada build web aplikasi.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: context.appTextSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}

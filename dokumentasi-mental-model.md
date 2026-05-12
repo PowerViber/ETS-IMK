@@ -168,5 +168,71 @@ Jika target-target tersebut dipenuhi, aplikasi akan lebih mampu "mengajari" peng
 
 | File | Code Changes | Effect terhadap Mental Model |
 |---|---|---|
-| `lib/shared/widgets/main_scaffold.dart` | Tab Al-Quran, Latihan, dan Target sekarang menampilkan teks lebih tebal dan underline putih ketika aktif. | Pengguna lebih mudah mengetahui halaman shell yang sedang dibuka, sehingga konsistensi navigasi meningkat. |
-| `lib/features/home/home.dart` | Tab pada top bar Home memakai underline ketika route aktif, dan ikon Home berubah putih saat berada di `/home`. | Mengurangi kebingungan antara Home dan halaman lain karena posisi pengguna diberi visual cue yang jelas. |
+| `lib/shared/widgets/main_scaffold.dart` | Active state navigasi dipindahkan ke ikon floating dock: ikon halaman aktif diberi fill emerald dan icon color putih. | Pengguna lebih mudah mengetahui halaman shell yang sedang dibuka, sehingga konsistensi navigasi meningkat. |
+| `lib/features/home/home.dart` | Ikon Home pada floating dock tampil aktif ketika route `/home` dibuka. | Mengurangi kebingungan antara Home dan halaman lain karena posisi pengguna diberi visual cue yang jelas. |
+
+## 13. Perubahan - Modernisasi Visual Hierarchy Home (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/home/home.dart` | Greeting dipisah menjadi salam kecil dan nama pengguna yang lebih besar. | Pengguna langsung memahami bahwa Home adalah halaman orientasi utama, bukan hanya daftar kartu biasa. |
+| `lib/features/home/home.dart` | Kartu streak diubah menjadi hero card gelap dengan badge `0 Hari`, judul lebih kuat, dan copy pendukung. | Aksi utama untuk membangun kebiasaan belajar menjadi lebih menonjol dan emosional, sehingga motivasi pengguna lebih jelas. |
+| `lib/features/home/home.dart` | Tombol `Mulai Target Baru` dibuat lebih besar, memakai ikon tambah, dan warna primer yang lebih kuat. | Primary action lebih mudah diprediksi dan lebih cepat ditemukan. |
+| `lib/features/home/home.dart` | Section `Target Hari Ini` dan `Progress` memakai header dengan subtitle, sedangkan progress cards dibuat putih dengan ikon dalam badge kecil. | Hierarki informasi menjadi lebih modern: halaman punya heading, konteks, aksi utama, lalu ringkasan sekunder. |
+
+## 14. Perubahan - Modernisasi Target Screen (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/target/target.dart` | Menambahkan judul halaman `Target` dan subtitle konteks di bagian atas layar. | Pengguna langsung memahami fungsi halaman sebelum melihat daftar target. |
+| `lib/features/target/target.dart` | CTA `Mulai Target Baru` dibuat lebih besar, berwarna emerald gelap, dan memakai ikon tambah. | Aksi utama halaman menjadi lebih jelas dan mudah ditemukan. |
+| `lib/features/target/target.dart` | Section Target Hari Ini, Target Mendatang, Diarsipkan, dan Riwayat Aktivitas memakai header dengan subtitle. | Setiap kelompok informasi punya konteks yang jelas, sehingga pengguna lebih mudah memahami status target. |
+| `lib/features/target/target.dart` | Target card, empty state, dan activity log card diubah menjadi card putih dengan border halus dan shadow ringan. | Tampilan lebih modern dan hierarki visual lebih bersih karena tidak semua elemen memakai warna hijau yang sama. |
+| `lib/features/target/target.dart` | Empty state `Tidak Ada` diganti menjadi pesan spesifik seperti `Belum ada target hari ini`, `Belum ada target mendatang`, dan `Belum ada arsip`. | Mengurangi ambiguitas karena pengguna tahu data apa yang kosong dan apa yang dapat dilakukan berikutnya. |
+
+## 15. Perubahan - Modernisasi Dashboard, Latihan, dan Al-Quran (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/dashboard/dashboard.dart` | Dashboard memakai heading lebih rapi, hero focus card, section subtitle, target rows yang lebih jelas, dan empty progress state yang lebih informatif. | Dashboard terasa sebagai pusat monitoring, bukan kumpulan blok statis. Pengguna lebih cepat membaca prioritas dan status. |
+| `lib/features/latihan/latihan.dart` | Halaman Latihan mendapat title page yang lebih jelas, kartu latihan putih yang lebih modern, status `Segera tersedia` dipertahankan, dan riwayat latihan diubah menjadi empty state yang lebih terstruktur. | Pengguna memahami bahwa latihan adalah area fitur yang sedang disiapkan, bukan halaman yang tampak rusak atau belum selesai secara acak. |
+| `lib/features/alquran/alquran.dart` | Halaman Al-Quran diberi heading halaman, subtitle, kartu juz putih, badge nomor surah, dan visual hierarchy baru untuk nama surah serta metadata. | Daftar surah menjadi lebih mudah dipindai. Struktur juz dan item surah terasa lebih representatif dan tidak sekadar tabel teks. |
+| `lib/features/alquran/alquran.dart` | Label `Juz 5 - 6` dipertahankan sebagai format judul tunggal yang lebih ringkas. | Mengurangi kesan baris pecah yang tidak perlu dan membuat representasi kelompok juz lebih konsisten. |
+
+## 16. Perubahan - Floating Icon Bottom Navigation (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/shared/widgets/main_scaffold.dart` | Navigasi shell dipindahkan dari top tab bar menjadi dock ikon floating di bagian bawah layar, dengan surface semi-transparan, shadow, dan active icon state. | Navigasi utama terasa lebih mobile-native dan lebih mudah dijangkau ibu jari. Pengguna tetap dapat mengenali posisi aktif melalui ikon yang diberi highlight. |
+| `lib/shared/widgets/main_scaffold.dart` | Top bar disederhanakan menjadi identitas `IQRA'` dan akses profile/dashboard saja. | Struktur visual menjadi lebih ringan karena area atas tidak lagi memuat dua fungsi sekaligus: branding dan tab switching. |
+| `lib/features/home/home.dart` | Home memakai dock ikon floating yang sama dengan status aktif pada ikon Home, sementara top bar diringkas menjadi branding dan profile. | Pengalaman Home dan halaman shell terasa konsisten, sehingga perubahan posisi navigasi tidak memecah mental model pengguna. |
+
+## 17. Perubahan - Refined Floating Dock Interaction (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/shared/widgets/main_scaffold.dart` | Surface dock dibuat lebih transparan secara default dan tidak lagi terasa seperti blok solid di belakang ikon. | Dock terasa lebih ringan di atas konten dan tidak mendominasi layar. |
+| `lib/shared/widgets/main_scaffold.dart` | Saat ikon di-long press, dock menjadi full opacity dan menampilkan label konteks seperti `Home`, `Al-Quran`, `Latihan`, atau `Target`. | Pengguna bisa tetap memakai navigasi logo-only, tetapi masih punya akses ke arti ikon ketika membutuhkan bantuan. |
+| `lib/shared/widgets/main_scaffold.dart` | Padding kosong di bawah konten shell dihapus sehingga tidak ada lagi strip latar persegi di belakang dock floating. | Dock benar-benar terasa melayang di atas konten, bukan berada di atas area footer buatan. |
+| `lib/features/home/home.dart` | Floating dock Home mendapat perilaku opacity dan long-press label yang sama seperti scaffold utama. | Konsistensi interaksi tetap terjaga pada halaman pertama aplikasi. |
+
+## 18. Perubahan - Dark Mode dan Toggle Dashboard (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/core/theme/theme_mode_provider.dart` | Menambahkan provider `themeModeProvider` untuk mengelola mode terang dan gelap secara global. | Preferensi tampilan memiliki sumber state yang jelas dan bisa dipakai konsisten di seluruh aplikasi. |
+| `lib/core/theme/app_theme.dart` | Menambahkan `darkTheme`, palet warna permukaan gelap, serta helper context seperti `appBackground`, `appSurface`, `appTextPrimary`, dan warna dock. | Representasi visual tetap konsisten saat mode berubah; pengguna tidak menemukan halaman yang sebagian terang dan sebagian gelap secara acak. |
+| `lib/main.dart` | `MaterialApp.router` kini membaca `themeModeProvider`, memakai `theme`, `darkTheme`, dan `themeMode`. | Toggle benar-benar mengubah tema aplikasi, bukan hanya satu layar tertentu. |
+| `lib/features/dashboard/dashboard.dart` | Menambahkan panel `Mode Gelap` dengan ikon status, deskripsi singkat, dan `Switch` sebagai kontrol utama perubahan tema. | Dashboard menjadi tempat kontrol preferensi tampilan yang mudah ditemukan dan predictable. |
+| `lib/features/home/home.dart`, `lib/shared/widgets/main_scaffold.dart`, `lib/features/target/target.dart`, `lib/features/latihan/latihan.dart`, `lib/features/alquran/alquran.dart` | Permukaan, teks utama, teks sekunder, border, dan dock floating diikat ke helper theme-aware agar ikut menyesuaikan light/dark mode. | Dark mode terasa menyeluruh dan tidak merusak keterbacaan di layar inti aplikasi. |
+
+## 19. Perubahan - PDF Juz Reader Al-Quran (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `surah-quran/juz/juz-01.pdf` s.d. `juz-30.pdf` | PDF utama `alquran.pdf` dipisahkan menjadi 30 file juz berdasarkan rentang halaman mushaf standar. | Pengguna membuka satu konteks bacaan yang jelas, bukan satu dokumen besar tanpa batas bagian. |
+| `lib/features/alquran/juz_document.dart` | Menambahkan data metadata juz: nomor juz, rentang halaman mushaf, jumlah halaman, dan path asset PDF. | Struktur representasi juz menjadi eksplisit dan bisa dipakai konsisten oleh daftar maupun reader. |
+| `lib/features/alquran/alquran.dart` | Halaman Al-Quran diubah menjadi perpustakaan 30 juz yang menampilkan judul, rentang halaman, dan jumlah halaman PDF. | Pengguna lebih mudah memilih bagian yang diinginkan sebelum masuk ke mode baca. |
+| `lib/features/alquran/juz_reader.dart`, `lib/features/alquran/juz_pdf_viewer.dart` | Menambahkan interface reader khusus untuk satu juz dengan header konteks dan embedded PDF viewer berbasis frame web. | Sistem memberi feedback lokasi yang jelas: pengguna tahu sedang membaca juz berapa dan rentang halamannya. |
+| `lib/core/router/app_router.dart` | Menambahkan route `/alquran/juz/:number` untuk membuka reader juz tertentu. | Navigasi dari daftar menuju bacaan menjadi langsung dan predictable. |
+| `pubspec.yaml` | Menambahkan asset folder `surah-quran/juz/` agar 30 PDF hasil split bisa dimuat oleh aplikasi. | Setiap route reader dapat membuka file PDF juz yang tepat secara langsung dari asset aplikasi. |

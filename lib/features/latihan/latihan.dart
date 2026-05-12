@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme.dart';
 
 class LatihanScreen extends StatelessWidget {
   const LatihanScreen({super.key});
@@ -6,21 +7,30 @@ class LatihanScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F1F1),
+      backgroundColor: context.appBackground,
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Latihan Hari Ini',
+            Text(
+              'Latihan',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF234B41),
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: context.appTextPrimary,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 4),
+            Text(
+              'Mode latihan sedang disiapkan untuk hafalan yang lebih interaktif.',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: context.appTextSecondary,
+              ),
+            ),
+            const SizedBox(height: 18),
             const _LatihanCard(
               title: 'Tebak Surah',
               subtitle: 'Latih hafalan nama surah dengan kuis cepat.',
@@ -34,38 +44,45 @@ class LatihanScreen extends StatelessWidget {
               buttonLabel: 'Segera tersedia',
               icon: Icons.menu_book,
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Riwayat Latihan',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF234B41),
-              ),
+            const SizedBox(height: 20),
+            const _LatihanSectionHeader(
+              title: 'Riwayat Latihan',
+              subtitle: 'Hasil latihan akan tersimpan di area ini.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Expanded(
               child: Container(
                 width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD3DFDB),
-                  borderRadius: BorderRadius.circular(12),
+                  color: context.appSurface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: context.appBorder),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x22000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 3),
+                      color: Color(0x12000000),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    'Belum ada riwayat latihan',
-                    style: TextStyle(
-                      color: Color(0xFF4C6960),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.history_toggle_off,
+                          color: Color(0xFF166D56), size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Belum ada riwayat latihan',
+                        style: TextStyle(
+                          color: context.appTextSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -94,15 +111,16 @@ class _LatihanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFD3DFDB),
-        borderRadius: BorderRadius.circular(12),
+        color: context.appSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.appBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 6,
-            offset: Offset(0, 3),
+            color: Color(0x12000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -111,11 +129,11 @@ class _LatihanCard extends StatelessWidget {
           Container(
             width: 44,
             height: 44,
-            decoration: const BoxDecoration(
-              color: Color(0xFF63B295),
-              shape: BoxShape.circle,
+            decoration: BoxDecoration(
+              color: context.appSoftSurface,
+              borderRadius: const BorderRadius.all(Radius.circular(14)),
             ),
-            child: Icon(icon, color: const Color(0xFFEAF5F1), size: 24),
+            child: Icon(icon, color: const Color(0xFF166D56), size: 24),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -124,19 +142,20 @@ class _LatihanCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF234B41),
+                    fontWeight: FontWeight.w800,
+                    color: context.appTextPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF3A5C53),
+                    color: context.appTextSecondary,
+                    height: 1.25,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -161,6 +180,42 @@ class _LatihanCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _LatihanSectionHeader extends StatelessWidget {
+  const _LatihanSectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: context.appTextPrimary,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: context.appTextSecondary,
+          ),
+        ),
+      ],
     );
   }
 }
