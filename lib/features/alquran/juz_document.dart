@@ -18,6 +18,12 @@ class JuzDocument {
       'surah-quran/juz/juz-${number.toString().padLeft(2, '0')}.pdf';
 
   int get totalPages => mushafEndPage - mushafStartPage + 1;
+
+  List<String> get pageAssetPaths => List.generate(
+        totalPages,
+        (index) =>
+            'surah-quran/juz-pages/juz-${number.toString().padLeft(2, '0')}/page-${(index + 1).toString().padLeft(2, '0')}.jpg',
+      );
 }
 
 const List<JuzDocument> juzDocuments = [

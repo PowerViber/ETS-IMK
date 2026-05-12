@@ -3,9 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import 'juz_document.dart';
-import 'juz_pdf_viewer.dart';
 
-class JuzReaderScreen extends StatelessWidget {
+class JuzReaderScreen extends StatefulWidget {
   const JuzReaderScreen({
     super.key,
     required this.document,
@@ -14,7 +13,23 @@ class JuzReaderScreen extends StatelessWidget {
   final JuzDocument document;
 
   @override
+  State<JuzReaderScreen> createState() => _JuzReaderScreenState();
+}
+
+class _JuzReaderScreenState extends State<JuzReaderScreen> {
+  late final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final pageAssets = widget.document.pageAssetPaths;
+
     return Scaffold(
       backgroundColor: context.appBackground,
       appBar: AppBar(
@@ -29,7 +44,7 @@ class JuzReaderScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              document.title,
+              widget.document.title,
               style: TextStyle(
                 color: context.appTextPrimary,
                 fontSize: 18,
@@ -37,7 +52,7 @@ class JuzReaderScreen extends StatelessWidget {
               ),
             ),
             Text(
-              document.pageRangeLabel,
+              widget.document.pageRangeLabel,
               style: TextStyle(
                 color: context.appTextSecondary,
                 fontSize: 11,
@@ -79,7 +94,7 @@ class JuzReaderScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${document.totalPages} halaman khusus untuk ${document.title}',
+                          '${widget.document.totalPages} halaman khusus untuk ${widget.document.title}',
                           style: TextStyle(
                             color: context.appTextPrimary,
                             fontSize: 13,
@@ -88,7 +103,7 @@ class JuzReaderScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'PDF ini sudah dipisahkan dari mushaf utama agar pembacaan tetap fokus pada satu juz.',
+                          'Geser halaman untuk membaca tanpa toolbar PDF browser.',
                           style: TextStyle(
                             color: context.appTextSecondary,
                             fontSize: 12,
@@ -104,11 +119,77 @@ class JuzReaderScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              child: JuzPdfViewer(assetPath: document.assetPath),
+            child: Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  itemCount: pageAssets.length,
+                  onPageChanged: (value) {
+                    setState(() {
+                      _currentPage = value;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x22000000),
+                              blurRadius: 18,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: InteractiveViewer(
+                            minScale: 1,
+                            maxScale: 4,
+                            child: Center(
+                              child: Image.asset(
+                                pageAssets[index],
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                height: double.infinity,
+                                filterQuality: FilterQuality.high,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 26,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xE6166D56),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '${_currentPage + 1} / ${pageAssets.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
