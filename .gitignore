@@ -33,6 +33,12 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Large Quran source/render assets are hosted outside Git.
+/surah-quran/*.pdf
+/surah-quran/juz/
+/surah-quran/juz-pages/
+/surah-quran/juz-untracked-backup/
+
 # Symbolication related
 app.*.symbols
 

@@ -25,35 +25,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - surah-quran/
-    - surah-quran/juz/
-    - surah-quran/juz-pages/juz-01/
-    - surah-quran/juz-pages/juz-02/
-    - surah-quran/juz-pages/juz-03/
-    - surah-quran/juz-pages/juz-04/
-    - surah-quran/juz-pages/juz-05/
-    - surah-quran/juz-pages/juz-06/
-    - surah-quran/juz-pages/juz-07/
-    - surah-quran/juz-pages/juz-08/
-    - surah-quran/juz-pages/juz-09/
-    - surah-quran/juz-pages/juz-10/
-    - surah-quran/juz-pages/juz-11/
-    - surah-quran/juz-pages/juz-12/
-    - surah-quran/juz-pages/juz-13/
-    - surah-quran/juz-pages/juz-14/
-    - surah-quran/juz-pages/juz-15/
-    - surah-quran/juz-pages/juz-16/
-    - surah-quran/juz-pages/juz-17/
-    - surah-quran/juz-pages/juz-18/
-    - surah-quran/juz-pages/juz-19/
-    - surah-quran/juz-pages/juz-20/
-    - surah-quran/juz-pages/juz-21/
-    - surah-quran/juz-pages/juz-22/
-    - surah-quran/juz-pages/juz-23/
-    - surah-quran/juz-pages/juz-24/
-    - surah-quran/juz-pages/juz-25/
-    - surah-quran/juz-pages/juz-26/
-    - surah-quran/juz-pages/juz-27/
-    - surah-quran/juz-pages/juz-28/
-    - surah-quran/juz-pages/juz-29/
-    - surah-quran/juz-pages/juz-30/
+    - surah-quran/Al-Fathihah.txt
+    - surah-quran/tezt.txt

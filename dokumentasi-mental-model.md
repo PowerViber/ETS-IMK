@@ -236,3 +236,11 @@ Jika target-target tersebut dipenuhi, aplikasi akan lebih mampu "mengajari" peng
 | `lib/features/alquran/juz_reader.dart` | Reader juz diubah dari iframe PDF browser menjadi `PageView` native berbasis image pages, lengkap dengan zoom gesture dan indikator halaman. | Toolbar PDF browser hilang sehingga perpindahan dari UI aplikasi ke halaman bacaan terasa lebih seamless. |
 | `lib/core/router/app_router.dart` | Menambahkan route `/alquran/juz/:number` untuk membuka reader juz tertentu. | Navigasi dari daftar menuju bacaan menjadi langsung dan predictable. |
 | `pubspec.yaml` | Menambahkan asset folder halaman hasil render `surah-quran/juz-pages/juz-01/` s.d. `juz-30/`. | Reader dapat menampilkan mushaf langsung sebagai bagian dari UI aplikasi, tanpa chrome dari PDF viewer browser. |
+
+## 20. Perubahan - Supabase Quran PDF Hosting (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/alquran/juz_document.dart` | Menambahkan metadata `QuranPdfSource` untuk 8 file PDF Supabase `alquran_1.pdf` sampai `alquran_8.pdf`, termasuk rentang halaman sumber. | Aplikasi tetap tahu bagian PDF mana yang harus dibuka untuk setiap juz tanpa menyimpan file besar di repository. |
+| `lib/features/alquran/juz_reader.dart`, `lib/features/alquran/remote_pdf_viewer.dart` | Reader sekarang membuka file PDF hosted Supabase dengan parameter halaman awal dan mode toolbar minimal. | Pengguna tetap masuk dari daftar juz ke halaman baca, sementara asset besar diambil dari storage eksternal. |
+| `pubspec.yaml`, `.gitignore` | Menghapus registrasi asset PDF/image Quran besar dari bundle Flutter dan menambahkan ignore rule untuk file besar lokal. | Repository lebih ringan untuk GitHub dan Vercel, serta mengurangi risiko asset besar ikut ter-commit lagi. |

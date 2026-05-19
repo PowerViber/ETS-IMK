@@ -19,12 +19,115 @@ class JuzDocument {
 
   int get totalPages => mushafEndPage - mushafStartPage + 1;
 
-  List<String> get pageAssetPaths => List.generate(
-        totalPages,
-        (index) =>
-            'surah-quran/juz-pages/juz-${number.toString().padLeft(2, '0')}/page-${(index + 1).toString().padLeft(2, '0')}.jpg',
-      );
+  int get sourcePdfStartPage => mushafStartPage + 3;
+
+  int get sourcePdfEndPage => mushafEndPage + 3;
+
+  QuranPdfSource get remoteSource =>
+      QuranPdfSource.forSourcePage(sourcePdfStartPage);
 }
+
+class QuranPdfSource {
+  const QuranPdfSource({
+    required this.partNumber,
+    required this.startPage,
+    required this.endPage,
+    required this.rawUrl,
+    this.initialSourcePage,
+  });
+
+  final int partNumber;
+  final int startPage;
+  final int endPage;
+  final String rawUrl;
+  final int? initialSourcePage;
+
+  int pageInPart(int sourcePage) => sourcePage - startPage + 1;
+
+  String get viewerUrl {
+    final initialPage = pageInPart(sourcePageClamp(initialSourcePage ?? startPage));
+    return '$rawUrl#toolbar=0&navpanes=0&scrollbar=0&page=$initialPage&view=FitH';
+  }
+
+  int sourcePageClamp(int sourcePage) {
+    if (sourcePage < startPage) {
+      return startPage;
+    }
+    if (sourcePage > endPage) {
+      return endPage;
+    }
+    return sourcePage;
+  }
+
+  static QuranPdfSource forSourcePage(int sourcePage) {
+    for (final source in quranPdfSources) {
+      if (sourcePage >= source.startPage && sourcePage <= source.endPage) {
+        return QuranPdfSource(
+          partNumber: source.partNumber,
+          startPage: source.startPage,
+          endPage: source.endPage,
+          rawUrl: source.rawUrl,
+          initialSourcePage: sourcePage,
+        );
+      }
+    }
+    return quranPdfSources.last;
+  }
+}
+
+const String _supabaseQuranBaseUrl =
+    'https://dsmabwvgqwybuuieteba.supabase.co/storage/v1/object/public/Alquran/Alquran';
+
+const List<QuranPdfSource> quranPdfSources = [
+  QuranPdfSource(
+    partNumber: 1,
+    startPage: 1,
+    endPage: 79,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_1.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 2,
+    startPage: 80,
+    endPage: 157,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_2.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 3,
+    startPage: 158,
+    endPage: 235,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_3.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 4,
+    startPage: 236,
+    endPage: 313,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_4.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 5,
+    startPage: 314,
+    endPage: 391,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_5.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 6,
+    startPage: 392,
+    endPage: 469,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_6.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 7,
+    startPage: 470,
+    endPage: 547,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_7.pdf',
+  ),
+  QuranPdfSource(
+    partNumber: 8,
+    startPage: 548,
+    endPage: 625,
+    rawUrl: '$_supabaseQuranBaseUrl/alquran_8.pdf',
+  ),
+];
 
 const List<JuzDocument> juzDocuments = [
   JuzDocument(number: 1, mushafStartPage: 1, mushafEndPage: 21),
