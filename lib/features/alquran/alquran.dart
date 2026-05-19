@@ -38,6 +38,7 @@ class AlQuranScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.separated(
+                  padding: const EdgeInsets.only(bottom: 112),
                   itemCount: juzDocuments.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
