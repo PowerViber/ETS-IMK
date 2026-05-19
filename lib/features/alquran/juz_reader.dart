@@ -114,6 +114,7 @@ class JuzReaderScreen extends StatelessWidget {
                 url: source.rawUrl,
                 fallbackUrl: source.rawUrl,
                 initialPage: source.initialPageInPart,
+                pageCount: document.totalPages,
               ),
             ),
           ),

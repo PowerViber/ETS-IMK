@@ -12,11 +12,13 @@ class RemotePdfViewer extends StatefulWidget {
     required this.url,
     required this.fallbackUrl,
     required this.initialPage,
+    required this.pageCount,
   });
 
   final String url;
   final String fallbackUrl;
   final int initialPage;
+  final int pageCount;
 
   @override
   State<RemotePdfViewer> createState() => _RemotePdfViewerState();
@@ -35,6 +37,7 @@ class _RemotePdfViewerState extends State<RemotePdfViewer> {
           pdfUrl: widget.url,
           fallbackUrl: widget.fallbackUrl,
           initialPage: widget.initialPage,
+          pageCount: widget.pageCount,
         )
         ..title = 'Pembaca Al-Quran'
         ..style.width = '100%'
@@ -43,7 +46,9 @@ class _RemotePdfViewerState extends State<RemotePdfViewer> {
         ..style.backgroundColor = 'transparent'
         ..setAttribute('loading', 'lazy')
         ..setAttribute(
-            'sandbox', 'allow-scripts allow-same-origin allow-downloads')
+          'sandbox',
+          'allow-scripts allow-same-origin allow-downloads',
+        )
         ..setAttribute('allowfullscreen', 'true');
     });
   }
@@ -58,6 +63,7 @@ String _pdfJsViewerHtml({
   required String pdfUrl,
   required String fallbackUrl,
   required int initialPage,
+  required int pageCount,
 }) {
   final encodedPdfUrl = jsonEncode(pdfUrl);
   final encodedFallbackUrl = jsonEncode(fallbackUrl);
@@ -103,31 +109,16 @@ String _pdfJsViewerHtml({
       color: var(--reader-text);
     }
     .toolbar {
-      min-height: 48px;
+      min-height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
       padding: 8px 12px;
       background: var(--reader-surface);
       border-bottom: 1px solid var(--reader-border);
       backdrop-filter: blur(14px);
     }
-    .toolbar button {
-      width: 36px;
-      height: 32px;
-      border: 1px solid var(--reader-border);
-      border-radius: 12px;
-      background: transparent;
-      color: var(--reader-text);
-      font-size: 18px;
-      font-weight: 800;
-    }
-    .toolbar button:disabled {
-      opacity: 0.35;
-    }
     .page-label {
-      min-width: 92px;
       text-align: center;
       font-size: 13px;
       font-weight: 800;
@@ -138,10 +129,23 @@ String _pdfJsViewerHtml({
       min-height: 0;
       overflow: auto;
       padding: 12px 10px 116px;
-      text-align: center;
       -webkit-overflow-scrolling: touch;
     }
-    canvas {
+    .pages {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: center;
+    }
+    .page-shell {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      border-radius: 8px;
+    }
+    .page-shell canvas {
       display: block;
       width: 100%;
       height: auto;
@@ -149,6 +153,20 @@ String _pdfJsViewerHtml({
       border-radius: 8px;
       background: #fff;
       box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+    }
+    .page-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 1;
+      min-width: 34px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(22, 109, 86, 0.88);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
     }
     .state {
       height: 100%;
@@ -170,14 +188,12 @@ String _pdfJsViewerHtml({
   </style>
 </head>
 <body>
-  <div class="toolbar" aria-label="Kontrol halaman PDF">
-    <button id="prevPage" type="button" aria-label="Halaman sebelumnya">‹</button>
+  <div class="toolbar" aria-label="Status halaman PDF">
     <div id="pageLabel" class="page-label">Memuat...</div>
-    <button id="nextPage" type="button" aria-label="Halaman berikutnya">›</button>
   </div>
   <main id="viewer" class="viewer">
     <div id="state" class="state">Memuat halaman mushaf...</div>
-    <canvas id="pdfCanvas" hidden></canvas>
+    <div id="pages" class="pages" hidden></div>
   </main>
   <script type="module">
     import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs';
@@ -187,100 +203,141 @@ String _pdfJsViewerHtml({
 
     const pdfUrl = $encodedPdfUrl;
     const fallbackUrl = $encodedFallbackUrl;
-    const canvas = document.getElementById('pdfCanvas');
-    const context = canvas.getContext('2d');
     const viewer = document.getElementById('viewer');
     const state = document.getElementById('state');
+    const pages = document.getElementById('pages');
     const pageLabel = document.getElementById('pageLabel');
-    const prevPage = document.getElementById('prevPage');
-    const nextPage = document.getElementById('nextPage');
 
     let pdfDocument = null;
-    let pageNumber = Math.max(1, $initialPage);
-    let renderTask = null;
+    let startPage = Math.max(1, $initialPage);
+    let endPage = startPage;
+    let observer = null;
     let resizeTimer = null;
 
     function setBusy(message) {
       state.hidden = false;
       state.textContent = message;
-      canvas.hidden = true;
+      pages.hidden = true;
     }
 
-    function updateControls() {
+    function pageWidth() {
+      return Math.max(280, viewer.clientWidth - 20);
+    }
+
+    function updateLabel(currentPage) {
       const total = pdfDocument ? pdfDocument.numPages : 0;
-      pageLabel.textContent = total ? pageNumber + ' / ' + total : 'Memuat...';
-      prevPage.disabled = !total || pageNumber <= 1;
-      nextPage.disabled = !total || pageNumber >= total;
+      pageLabel.textContent = total
+        ? 'Halaman ' + currentPage + ' / ' + total
+        : 'Memuat...';
     }
 
-    async function renderPage() {
-      if (!pdfDocument) return;
-      if (renderTask) {
-        renderTask.cancel();
+    async function renderPageShell(shell) {
+      if (!pdfDocument || shell.dataset.rendered === 'true') {
+        return;
       }
 
-      updateControls();
+      shell.dataset.rendered = 'true';
+      const pageNumber = Number(shell.dataset.page);
+      const canvas = shell.querySelector('canvas');
+      const context = canvas.getContext('2d');
       const page = await pdfDocument.getPage(pageNumber);
       const baseViewport = page.getViewport({ scale: 1 });
-      const availableWidth = Math.max(280, viewer.clientWidth - 20);
       const deviceScale = Math.min(window.devicePixelRatio || 1, 2);
-      const cssScale = availableWidth / baseViewport.width;
+      const cssScale = pageWidth() / baseViewport.width;
       const viewport = page.getViewport({ scale: cssScale * deviceScale });
 
       canvas.width = Math.floor(viewport.width);
       canvas.height = Math.floor(viewport.height);
       canvas.style.maxWidth = Math.floor(viewport.width / deviceScale) + 'px';
       canvas.style.width = '100%';
+      shell.style.minHeight = '';
 
-      state.hidden = true;
-      canvas.hidden = false;
-
-      renderTask = page.render({ canvasContext: context, viewport });
-      try {
-        await renderTask.promise;
-      } catch (error) {
-        if (error?.name !== 'RenderingCancelledException') {
-          throw error;
-        }
-      } finally {
-        renderTask = null;
-      }
+      await page.render({ canvasContext: context, viewport }).promise;
     }
 
-    prevPage.addEventListener('click', () => {
-      if (pageNumber > 1) {
-        pageNumber -= 1;
-        renderPage();
-      }
-    });
+    function buildPageShells() {
+      pages.innerHTML = '';
+      const fragment = document.createDocumentFragment();
 
-    nextPage.addEventListener('click', () => {
-      if (pdfDocument && pageNumber < pdfDocument.numPages) {
-        pageNumber += 1;
-        renderPage();
+      for (let pageNumber = startPage; pageNumber <= endPage; pageNumber += 1) {
+        const shell = document.createElement('section');
+        shell.className = 'page-shell';
+        shell.dataset.page = String(pageNumber);
+        shell.dataset.rendered = 'false';
+        shell.style.minHeight = Math.round(pageWidth() * 1.45) + 'px';
+
+        const badge = document.createElement('div');
+        badge.className = 'page-badge';
+        badge.textContent = String(pageNumber);
+
+        const canvas = document.createElement('canvas');
+        shell.append(badge, canvas);
+        fragment.append(shell);
       }
-    });
+
+      pages.append(fragment);
+      state.hidden = true;
+      pages.hidden = false;
+    }
+
+    function observePages() {
+      if (observer) {
+        observer.disconnect();
+      }
+
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const pageNumber = Number(entry.target.dataset.page);
+          if (entry.isIntersecting) {
+            updateLabel(pageNumber);
+            renderPageShell(entry.target);
+          }
+        });
+      }, {
+        root: viewer,
+        rootMargin: '900px 0px',
+        threshold: 0.01,
+      });
+
+      document.querySelectorAll('.page-shell').forEach((shell) => {
+        observer.observe(shell);
+      });
+    }
+
+    function resetRenderedPages() {
+      document.querySelectorAll('.page-shell').forEach((shell) => {
+        shell.dataset.rendered = 'false';
+        const canvas = shell.querySelector('canvas');
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = 0;
+        canvas.height = 0;
+        shell.style.minHeight = Math.round(pageWidth() * 1.45) + 'px';
+      });
+      observePages();
+    }
 
     window.addEventListener('resize', () => {
       window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(renderPage, 180);
+      resizeTimer = window.setTimeout(resetRenderedPages, 180);
     });
 
     try {
       setBusy('Memuat halaman mushaf...');
       pdfDocument = await pdfjsLib.getDocument({ url: pdfUrl }).promise;
-      pageNumber = Math.min(pageNumber, pdfDocument.numPages);
-      await renderPage();
+      startPage = Math.min(startPage, pdfDocument.numPages);
+      endPage = Math.min(pdfDocument.numPages, startPage + Math.max(1, $pageCount) - 1);
+      updateLabel(startPage);
+      buildPageShells();
+      observePages();
     } catch (error) {
       state.hidden = false;
-      canvas.hidden = true;
+      pages.hidden = true;
       state.innerHTML =
         'PDF belum bisa dirender di perangkat ini.<br><a href="' +
         fallbackUrl +
         '" target="_blank" rel="noopener">Buka PDF langsung</a>';
       pageLabel.textContent = 'Gagal';
-      prevPage.disabled = true;
-      nextPage.disabled = true;
     }
   </script>
 </body>

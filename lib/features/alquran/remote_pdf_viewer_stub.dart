@@ -8,11 +8,13 @@ class RemotePdfViewer extends StatelessWidget {
     required this.url,
     required this.fallbackUrl,
     required this.initialPage,
+    required this.pageCount,
   });
 
   final String url;
   final String fallbackUrl;
   final int initialPage;
+  final int pageCount;
 
   @override
   Widget build(BuildContext context) {

@@ -253,3 +253,11 @@ Jika target-target tersebut dipenuhi, aplikasi akan lebih mampu "mengajari" peng
 | `lib/features/alquran/juz_document.dart` | Menambahkan `initialPageInPart` agar halaman awal juz bisa dikirim sebagai angka eksplisit ke reader canvas. | Reader tetap memulai dari halaman juz yang benar walaupun PDF disimpan sebagai 8 part Supabase, bukan 30 file juz lokal. |
 | `lib/features/alquran/juz_reader.dart` | Reader mengirim URL mentah Supabase dan nomor halaman awal ke `RemotePdfViewer`. | Alur dari daftar juz ke halaman baca tetap terasa sama, tetapi rendering tidak bergantung pada kemampuan browser membuka PDF inline. |
 | `lib/features/alquran/remote_pdf_viewer_stub.dart` | Constructor stub disamakan dengan versi web memakai parameter `initialPage`. | Struktur komponen tetap konsisten di build non-web dan web. |
+
+## 22. Perubahan - Scrollable PDF Juz Reader (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/alquran/remote_pdf_viewer_web.dart` | Reader PDF.js diubah dari mode satu halaman dengan tombol prev/next menjadi daftar halaman vertikal yang bisa di-scroll. Halaman dirender lazy saat mendekati viewport. | Membaca juz terasa seperti membuka mushaf panjang yang natural di mobile, bukan berpindah halaman lewat kontrol kecil. |
+| `lib/features/alquran/juz_reader.dart` | `RemotePdfViewer` menerima `pageCount` dari `document.totalPages` agar scroll hanya memuat halaman dalam juz yang dipilih. | Pengguna tidak tersesat ke seluruh part Supabase; konteks tetap sesuai pilihan Juz 1, Juz 2, dan seterusnya. |
+| `lib/features/alquran/remote_pdf_viewer_stub.dart` | Parameter `pageCount` ditambahkan agar interface stub tetap sama dengan implementasi web. | Struktur kode tetap konsisten lintas platform. |
