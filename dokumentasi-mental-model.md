@@ -244,3 +244,12 @@ Jika target-target tersebut dipenuhi, aplikasi akan lebih mampu "mengajari" peng
 | `lib/features/alquran/juz_document.dart` | Menambahkan metadata `QuranPdfSource` untuk 8 file PDF Supabase `alquran_1.pdf` sampai `alquran_8.pdf`, termasuk rentang halaman sumber. | Aplikasi tetap tahu bagian PDF mana yang harus dibuka untuk setiap juz tanpa menyimpan file besar di repository. |
 | `lib/features/alquran/juz_reader.dart`, `lib/features/alquran/remote_pdf_viewer.dart` | Reader sekarang membuka file PDF hosted Supabase dengan parameter halaman awal dan mode toolbar minimal. | Pengguna tetap masuk dari daftar juz ke halaman baca, sementara asset besar diambil dari storage eksternal. |
 | `pubspec.yaml`, `.gitignore` | Menghapus registrasi asset PDF/image Quran besar dari bundle Flutter dan menambahkan ignore rule untuk file besar lokal. | Repository lebih ringan untuk GitHub dan Vercel, serta mengurangi risiko asset besar ikut ter-commit lagi. |
+
+## 21. Perubahan - Mobile PDF Rendering Al-Quran (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/alquran/remote_pdf_viewer_web.dart` | Iframe tidak lagi diarahkan langsung ke file PDF. Reader web sekarang memuat PDF.js dan merender halaman mushaf ke canvas, dengan kontrol halaman sederhana. | Di Android Chrome, pengguna melihat halaman mushaf langsung di dalam aplikasi, bukan placeholder PDF gelap dengan tombol `Open`. |
+| `lib/features/alquran/juz_document.dart` | Menambahkan `initialPageInPart` agar halaman awal juz bisa dikirim sebagai angka eksplisit ke reader canvas. | Reader tetap memulai dari halaman juz yang benar walaupun PDF disimpan sebagai 8 part Supabase, bukan 30 file juz lokal. |
+| `lib/features/alquran/juz_reader.dart` | Reader mengirim URL mentah Supabase dan nomor halaman awal ke `RemotePdfViewer`. | Alur dari daftar juz ke halaman baca tetap terasa sama, tetapi rendering tidak bergantung pada kemampuan browser membuka PDF inline. |
+| `lib/features/alquran/remote_pdf_viewer_stub.dart` | Constructor stub disamakan dengan versi web memakai parameter `initialPage`. | Struktur komponen tetap konsisten di build non-web dan web. |

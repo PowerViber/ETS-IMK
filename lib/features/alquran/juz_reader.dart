@@ -111,8 +111,9 @@ class JuzReaderScreen extends StatelessWidget {
                 top: Radius.circular(18),
               ),
               child: RemotePdfViewer(
-                url: source.viewerUrl,
+                url: source.rawUrl,
                 fallbackUrl: source.rawUrl,
+                initialPage: source.initialPageInPart,
               ),
             ),
           ),

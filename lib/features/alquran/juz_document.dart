@@ -11,8 +11,7 @@ class JuzDocument {
 
   String get title => 'Juz $number';
 
-  String get pageRangeLabel =>
-      'Halaman mushaf $mushafStartPage-$mushafEndPage';
+  String get pageRangeLabel => 'Halaman mushaf $mushafStartPage-$mushafEndPage';
 
   String get assetPath =>
       'surah-quran/juz/juz-${number.toString().padLeft(2, '0')}.pdf';
@@ -44,9 +43,11 @@ class QuranPdfSource {
 
   int pageInPart(int sourcePage) => sourcePage - startPage + 1;
 
+  int get initialPageInPart =>
+      pageInPart(sourcePageClamp(initialSourcePage ?? startPage));
+
   String get viewerUrl {
-    final initialPage = pageInPart(sourcePageClamp(initialSourcePage ?? startPage));
-    return '$rawUrl#toolbar=0&navpanes=0&scrollbar=0&page=$initialPage&view=FitH';
+    return '$rawUrl#toolbar=0&navpanes=0&scrollbar=0&page=$initialPageInPart&view=FitH';
   }
 
   int sourcePageClamp(int sourcePage) {
