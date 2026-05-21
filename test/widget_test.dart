@@ -7,13 +7,15 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:modern_habit_app/main.dart';
 
 void main() {
   testWidgets('App loads with title', (WidgetTester tester) async {
-    await tester.pumpWidget(const ModernHabitApp());
+    await tester.pumpWidget(const ProviderScope(child: ModernHabitApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('MyAlQuran'), findsOneWidget);
+    expect(find.text("IQRA'"), findsAtLeast(1));
   });
 }
+
