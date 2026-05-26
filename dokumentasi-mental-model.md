@@ -261,3 +261,10 @@ Jika target-target tersebut dipenuhi, aplikasi akan lebih mampu "mengajari" peng
 | `lib/features/alquran/remote_pdf_viewer_web.dart` | Reader PDF.js diubah dari mode satu halaman dengan tombol prev/next menjadi daftar halaman vertikal yang bisa di-scroll. Halaman dirender lazy saat mendekati viewport. | Membaca juz terasa seperti membuka mushaf panjang yang natural di mobile, bukan berpindah halaman lewat kontrol kecil. |
 | `lib/features/alquran/juz_reader.dart` | `RemotePdfViewer` menerima `pageCount` dari `document.totalPages` agar scroll hanya memuat halaman dalam juz yang dipilih. | Pengguna tidak tersesat ke seluruh part Supabase; konteks tetap sesuai pilihan Juz 1, Juz 2, dan seterusnya. |
 | `lib/features/alquran/remote_pdf_viewer_stub.dart` | Parameter `pageCount` ditambahkan agar interface stub tetap sama dengan implementasi web. | Struktur kode tetap konsisten lintas platform. |
+
+## 23. Perubahan - Target Tidak Tertutup Floating Navbar (Code Changes & Effect)
+
+| File | Code Changes | Effect terhadap Mental Model |
+|---|---|---|
+| `lib/features/target/target.dart` | Padding bawah halaman Target ditambah mengikuti safe area perangkat dan tinggi floating navbar. | Kartu target terakhir, arsip, dan riwayat aktivitas tetap bisa discroll ke atas dock sehingga tombol edit, selesai, dan hapus tidak tertutup. |
+| `lib/features/target/target.dart` | Bottom sheet tambah/edit target memakai `useRootNavigator: true`. | Form edit tampil di layer paling atas aplikasi, sehingga tombol `Simpan Perubahan` tidak tertimpa floating navbar. |

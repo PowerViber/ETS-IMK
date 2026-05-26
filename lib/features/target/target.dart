@@ -101,6 +101,7 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         DateTime localDate = selectedDate;
@@ -295,7 +296,12 @@ class _TargetScreenState extends ConsumerState<TargetScreen> {
     return Scaffold(
       backgroundColor: context.appBackground,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          18,
+          16,
+          MediaQuery.of(context).padding.bottom + 128,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
