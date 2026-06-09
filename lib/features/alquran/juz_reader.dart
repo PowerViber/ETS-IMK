@@ -15,7 +15,6 @@ class JuzReaderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final source = document.remoteSource;
 
     return Scaffold(
       backgroundColor: context.appBackground,
@@ -81,7 +80,7 @@ class JuzReaderScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Dibuka dari Supabase part ${source.partNumber}',
+                          'Mushaf Madani (Hafs)',
                           style: TextStyle(
                             color: context.appTextPrimary,
                             fontSize: 13,
@@ -90,7 +89,7 @@ class JuzReaderScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Reader memulai PDF pada halaman juz yang sesuai.',
+                          'Halaman dimuat otomatis dari CDN Quran.app dengan resolusi tinggi.',
                           style: TextStyle(
                             color: context.appTextSecondary,
                             fontSize: 12,
@@ -111,10 +110,9 @@ class JuzReaderScreen extends StatelessWidget {
                 top: Radius.circular(18),
               ),
               child: RemotePdfViewer(
-                url: source.rawUrl,
-                fallbackUrl: source.rawUrl,
-                initialPage: source.initialPageInPart,
+                mushafStartPage: document.mushafStartPage,
                 pageCount: document.totalPages,
+                juzNumber: document.number,
               ),
             ),
           ),

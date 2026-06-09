@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../target/target_provider.dart';
+import '../latihan/latihan_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final targets = ref.watch(targetProvider);
+    final streak = ref.watch(targetProvider.notifier).calculateCurrentStreak();
+    
+    final totalTargets = targets.length;
+    final completedTargetsCount = targets.where((t) => t.isCompleted).length;
+    final completionRate = totalTargets > 0 ? (completedTargetsCount * 100 ~/ totalTargets) : 0;
+    
+    final history = ref.watch(latihanHistoryProvider);
+    final totalSessions = history.length;
+    final avgAccuracy = ref.watch(latihanHistoryProvider.notifier).getAverageAccuracy();
+
     return Scaffold(
       backgroundColor: context.appBackground,
       body: SafeArea(
@@ -87,27 +101,31 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
-                              _StreakBadge(),
-                              SizedBox(width: 14),
+                              _StreakBadge(streak: streak),
+                              const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Bangun streak pertamamu',
-                                      style: TextStyle(
+                                      streak == 0
+                                          ? 'Bangun streak pertamamu'
+                                          : 'Lanjutkan streak hebatmu!',
+                                      style: const TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.w800,
                                         color: Colors.white,
                                         height: 1.15,
                                       ),
                                     ),
-                                    SizedBox(height: 4),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      'Mulai satu target kecil hari ini.',
-                                      style: TextStyle(
+                                      streak == 0
+                                          ? 'Mulai satu target kecil hari ini.'
+                                          : 'Kamu telah konsisten selama $streak hari berturut-turut!',
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                         color: Color(0xFFDCEEE8),
@@ -175,26 +193,26 @@ class HomeScreen extends StatelessWidget {
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                           childAspectRatio: 1.55,
-                          children: const [
+                          children: [
                             _ProgressCard(
                               icon: Icons.auto_awesome_motion,
                               title: 'Penamatan',
-                              value: '0%',
+                              value: '$completionRate%',
                             ),
                             _ProgressCard(
-                              icon: Icons.access_time,
-                              title: 'Waktu',
-                              value: '00:00',
+                              icon: Icons.check_circle_outline,
+                              title: 'Target Selesai',
+                              value: '$completedTargetsCount',
                             ),
                             _ProgressCard(
-                              icon: Icons.mic,
-                              title: 'Ayat Dihafalkan',
-                              value: '0%',
+                              icon: Icons.insights_outlined,
+                              title: 'Akurasi Kuis',
+                              value: '${avgAccuracy.toStringAsFixed(0)}%',
                             ),
                             _ProgressCard(
-                              icon: Icons.record_voice_over,
-                              title: 'Hafalan',
-                              value: '0%',
+                              icon: Icons.quiz_rounded,
+                              title: 'Latihan Sesi',
+                              value: '$totalSessions Sesi',
                             ),
                           ],
                         ),
@@ -419,7 +437,9 @@ class _HomeDockIconButton extends StatelessWidget {
 }
 
 class _StreakBadge extends StatelessWidget {
-  const _StreakBadge();
+  const _StreakBadge({required this.streak});
+
+  final int streak;
 
   @override
   Widget build(BuildContext context) {
@@ -431,14 +451,14 @@ class _StreakBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: const Color(0x47FFFFFF)),
       ),
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.local_fire_department, color: Color(0xFFFFD166), size: 24),
-          SizedBox(height: 1),
+          const Icon(Icons.local_fire_department, color: Color(0xFFFFD166), size: 24),
+          const SizedBox(height: 1),
           Text(
-            '0 Hari',
-            style: TextStyle(
+            '$streak Hari',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 10,
               fontWeight: FontWeight.w800,

@@ -7,6 +7,8 @@ import '../../features/alquran/juz_document.dart';
 import '../../features/alquran/juz_reader.dart';
 import '../../features/home/home.dart';
 import '../../features/latihan/latihan.dart';
+import '../../features/latihan/tebak_surah_screen.dart';
+import '../../features/latihan/sambung_ayat_screen.dart';
 import '../../features/target/target.dart';
 import '../../shared/widgets/main_scaffold.dart';
 
@@ -22,6 +24,55 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/dashboard',
         builder: (context, state) => const DashboardScreen(),
       ),
+      GoRoute(
+        path: '/alquran/juz/:number',
+        builder: (context, state) {
+          final juzNumber =
+              int.tryParse(state.pathParameters['number'] ?? '');
+          final document =
+              juzNumber == null ? null : findJuzDocument(juzNumber);
+
+          if (document == null) {
+            return const AlQuranScreen();
+          }
+
+          return JuzReaderScreen(document: document);
+        },
+      ),
+      GoRoute(
+        path: '/latihan/tebak-surah',
+        builder: (context, state) {
+          final juz = int.tryParse(state.uri.queryParameters['juz'] ?? '');
+          final startJuz = int.tryParse(state.uri.queryParameters['startJuz'] ?? '');
+          final endJuz = int.tryParse(state.uri.queryParameters['endJuz'] ?? '');
+          final surah = state.uri.queryParameters['surah'];
+          final count = int.tryParse(state.uri.queryParameters['count'] ?? '') ?? 5;
+          return TebakSurahScreen(
+            juzFilter: juz,
+            startJuzFilter: startJuz,
+            endJuzFilter: endJuz,
+            surahFilter: surah,
+            questionCount: count,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/latihan/sambung-ayat',
+        builder: (context, state) {
+          final juz = int.tryParse(state.uri.queryParameters['juz'] ?? '');
+          final startJuz = int.tryParse(state.uri.queryParameters['startJuz'] ?? '');
+          final endJuz = int.tryParse(state.uri.queryParameters['endJuz'] ?? '');
+          final surah = state.uri.queryParameters['surah'];
+          final count = int.tryParse(state.uri.queryParameters['count'] ?? '') ?? 5;
+          return SambungAyatScreen(
+            juzFilter: juz,
+            startJuzFilter: startJuz,
+            endJuzFilter: endJuz,
+            surahFilter: surah,
+            questionCount: count,
+          );
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScaffold(navigationShell: navigationShell);
@@ -32,23 +83,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/alquran',
                 builder: (context, state) => const AlQuranScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'juz/:number',
-                    builder: (context, state) {
-                      final juzNumber =
-                          int.tryParse(state.pathParameters['number'] ?? '');
-                      final document =
-                          juzNumber == null ? null : findJuzDocument(juzNumber);
-
-                      if (document == null) {
-                        return const AlQuranScreen();
-                      }
-
-                      return JuzReaderScreen(document: document);
-                    },
-                  ),
-                ],
               ),
             ],
           ),

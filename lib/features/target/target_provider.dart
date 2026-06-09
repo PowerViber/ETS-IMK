@@ -53,6 +53,47 @@ class TargetNotifier extends StateNotifier<List<TargetItem>> {
     state = state.where((item) => item.id != id).toList();
   }
 
+  // Calculate the current consecutive daily streak
+  int calculateCurrentStreak() {
+    if (state.isEmpty) return 0;
+    
+    // Filter completed targets and extract their normalized dates
+    final completedDates = state
+        .where((item) => item.isCompleted)
+        .map((item) => _normalizeDate(item.date))
+        .toSet()
+        .toList();
+        
+    if (completedDates.isEmpty) return 0;
+
+    // Sort in descending order (most recent first)
+    completedDates.sort((a, b) => b.compareTo(a));
+
+    final today = _normalizeDate(DateTime.now());
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    // If today and yesterday are not completed, the streak is broken (0)
+    if (!completedDates.contains(today) && !completedDates.contains(yesterday)) {
+      return 0;
+    }
+
+    int streak = 0;
+    DateTime checkDate = completedDates.contains(today) ? today : yesterday;
+
+    while (completedDates.contains(checkDate)) {
+      streak++;
+      checkDate = checkDate.subtract(const Duration(days: 1));
+    }
+
+    return streak;
+  }
+
+  // Check if at least one target is completed on a specific date
+  bool isDateCompleted(DateTime date) {
+    final normalized = _normalizeDate(date);
+    return state.any((item) => item.isCompleted && _normalizeDate(item.date) == normalized);
+  }
+
   // Helper mapping rule to strip timestamps so day grouping is smooth
   DateTime _normalizeDate(DateTime date) {
     return DateTime(date.year, date.month, date.day);

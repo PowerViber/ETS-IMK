@@ -4,12 +4,19 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_mode_provider.dart';
 import '../target/target_provider.dart';
+import '../latihan/latihan_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   DateTime _normalize(DateTime value) {
     return DateTime(value.year, value.month, value.day);
+  }
+
+  DateTime _getStartOfWeek() {
+    final now = DateTime.now();
+    final daysToSubtract = now.weekday - 1;
+    return DateTime(now.year, now.month, now.day).subtract(Duration(days: daysToSubtract));
   }
 
   @override
@@ -20,6 +27,21 @@ class DashboardScreen extends ConsumerWidget {
     final today = _normalize(DateTime.now());
     final todayTargets =
         targets.where((t) => _normalize(t.date) == today).toList();
+
+    final streak = ref.watch(targetProvider.notifier).calculateCurrentStreak();
+    
+    // Calculate weekly calendar status
+    final startOfWeek = _getStartOfWeek();
+    final daysOfWeek = List.generate(7, (i) => startOfWeek.add(Duration(days: i)));
+    final weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final completedStatus = daysOfWeek.map((d) => ref.read(targetProvider.notifier).isDateCompleted(d)).toList();
+
+    final history = ref.watch(latihanHistoryProvider);
+    final totalSessions = history.length;
+    final avgAccuracy = ref.read(latihanHistoryProvider.notifier).getAverageAccuracy();
+    final totalTargets = targets.length;
+    final completedTargetsCount = targets.where((t) => t.isCompleted).length;
+    final hasProgress = totalTargets > 0 || totalSessions > 0;
 
     return Scaffold(
       backgroundColor: context.appBackground,
@@ -84,10 +106,10 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
                       Icon(Icons.local_fire_department,
                           color: Color(0xFFFFD166), size: 24),
@@ -102,19 +124,21 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
-                    'Jaga ritme belajarmu.',
-                    style: TextStyle(
+                    streak == 0 ? 'Jaga ritme belajarmu.' : '$streak Hari Streak!',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    'Selesaikan target hari ini agar streak terasa nyata.',
-                    style: TextStyle(
+                    streak == 0
+                        ? 'Selesaikan target hari ini agar streak terasa nyata.'
+                        : 'Pertahankan kebiasaan belajarmu setiap hari!',
+                    style: const TextStyle(
                       color: Color(0xFFDCEEE8),
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -146,17 +170,14 @@ class DashboardScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: context.appBorder),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _StreakItem(day: 'M', done: true),
-                  _StreakItem(day: 'T', done: true),
-                  _StreakItem(day: 'W', done: true),
-                  _StreakItem(day: 'T', done: true),
-                  _StreakItem(day: 'F', done: false),
-                  _StreakItem(day: 'S', done: false),
-                  _StreakItem(day: 'S', done: false),
-                ],
+                children: List.generate(7, (index) {
+                  return _StreakItem(
+                    day: weekDayLabels[index],
+                    done: completedStatus[index],
+                  );
+                }),
               ),
             ),
             const SizedBox(height: 18),
@@ -209,8 +230,13 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle_outline,
-                          color: Color(0xFF166D56), size: 18),
+                      Icon(
+                        item.isCompleted
+                            ? Icons.check_circle
+                            : Icons.check_circle_outline,
+                        color: const Color(0xFF166D56),
+                        size: 18,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -219,6 +245,8 @@ class DashboardScreen extends ConsumerWidget {
                             color: context.appTextPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
+                            decoration:
+                                item.isCompleted ? TextDecoration.lineThrough : null,
                           ),
                         ),
                       ),
@@ -240,23 +268,66 @@ class DashboardScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: context.appBorder),
               ),
-              child: const Row(
-                children: [
-                  Icon(Icons.insights_outlined,
-                      color: Color(0xFF166D56), size: 22),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Belum ada progress terukur.',
-                      style: TextStyle(
-                        color: Color(0xFF6B8079),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+              child: hasProgress
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (totalTargets > 0) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.flag_rounded, color: Color(0xFF166D56), size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Target: $completedTargetsCount dari $totalTargets selesai (${(completedTargetsCount * 100 ~/ totalTargets)}%)',
+                                  style: TextStyle(
+                                    color: context.appTextPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (totalSessions > 0) const SizedBox(height: 12),
+                        ],
+                        if (totalSessions > 0) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.quiz_rounded, color: Color(0xFF166D56), size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Latihan: $totalSessions sesi diselesaikan (Akurasi: ${avgAccuracy.toStringAsFixed(0)}%)',
+                                  style: TextStyle(
+                                    color: context.appTextPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        const Icon(Icons.insights_outlined,
+                            color: Color(0xFF166D56), size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Belum ada progress terukur.',
+                            style: TextStyle(
+                              color: context.appTextSecondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
