@@ -37,7 +37,7 @@ class DashboardScreen extends ConsumerWidget {
     final completedStatus = daysOfWeek.map((d) => ref.read(targetProvider.notifier).isDateCompleted(d)).toList();
 
     final history = ref.watch(latihanHistoryProvider);
-    final totalSessions = history.length;
+    final totalSessions = history.sessions.length;
     final avgAccuracy = ref.read(latihanHistoryProvider.notifier).getAverageAccuracy();
     final totalTargets = targets.length;
     final completedTargetsCount = targets.where((t) => t.isCompleted).length;

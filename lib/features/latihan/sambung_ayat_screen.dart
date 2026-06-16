@@ -10,13 +10,17 @@ class SambungAyatQuizItem {
   final String questionText;
   final String correctAnswerText;
   final String surahName;
+  final int surahNumber;
   final int verseNumber;
+  final int juz;
 
   SambungAyatQuizItem({
     required this.questionText,
     required this.correctAnswerText,
     required this.surahName,
+    required this.surahNumber,
     required this.verseNumber,
+    required this.juz,
   });
 }
 
@@ -44,8 +48,11 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
   final List<String> _questions = [];
   final List<String> _nextVerses = [];
   final List<String> _surahNames = [];
+  final List<int> _surahNumbers = [];
   final List<int> _verseNumbers = [];
+  final List<int> _juzs = [];
   final List<List<String>> _options = [];
+  final List<bool> _outcomes = [];
   int _currentIndex = 0;
   int _score = 0;
   int? _selectedAnswerIndex;
@@ -74,38 +81,44 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
       filtered = List<QuranVerse>.from(quranVersesDb);
     }
 
-    // 2. Select distinct verses
-    // Shuffle the filtered verses first
-    filtered.shuffle(_random);
-
+    // 2. Select distinct verses using weighted selection
+    final historyNotifier = ref.read(latihanHistoryProvider.notifier);
     final targetCount = min(widget.questionCount, filtered.length);
     final List<QuranVerse> selectedVerses = [];
+    final List<QuranVerse> pool = List<QuranVerse>.from(filtered);
 
-    // Try to select verses that are not adjacent to each other first
-    for (var verse in filtered) {
-      if (selectedVerses.length >= targetCount) break;
+    for (int i = 0; i < targetCount; i++) {
+      if (pool.isEmpty) break;
 
-      bool tooClose = false;
-      for (var selected in selectedVerses) {
-        if (selected.surahNumber == verse.surahNumber &&
-            (selected.verseNumber - verse.verseNumber).abs() <= 1) {
-          tooClose = true;
+      double totalWeight = 0;
+      final List<double> weights = [];
+      for (var verse in pool) {
+        final w = historyNotifier.getVerseWeight(verse.surahName, verse.verseNumber);
+        weights.add(w);
+        totalWeight += w;
+      }
+
+      if (totalWeight <= 0) {
+        final selected = pool[_random.nextInt(pool.length)];
+        selectedVerses.add(selected);
+        pool.remove(selected);
+        continue;
+      }
+
+      final r = _random.nextDouble() * totalWeight;
+      double sum = 0;
+      QuranVerse? selectedVerse;
+      for (int j = 0; j < pool.length; j++) {
+        sum += weights[j];
+        if (sum >= r) {
+          selectedVerse = pool[j];
           break;
         }
       }
-      if (!tooClose) {
-        selectedVerses.add(verse);
-      }
-    }
 
-    // If we need more verses, fill them in regardless of closeness
-    if (selectedVerses.length < targetCount) {
-      for (var verse in filtered) {
-        if (selectedVerses.length >= targetCount) break;
-        if (!selectedVerses.contains(verse)) {
-          selectedVerses.add(verse);
-        }
-      }
+      selectedVerse ??= pool.last;
+      selectedVerses.add(selectedVerse);
+      pool.remove(selectedVerse);
     }
 
     // 3. Generate exactly one SambungAyatQuizItem for each selected verse
@@ -133,7 +146,9 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
               questionText: '... $secondHalf',
               correctAnswerText: nextVerse.text,
               surahName: verse.surahName,
+              surahNumber: verse.surahNumber,
               verseNumber: verse.verseNumber,
+              juz: verse.juz,
             ),
           );
         } else {
@@ -142,7 +157,9 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
               questionText: '$firstHalf ...',
               correctAnswerText: secondHalf,
               surahName: verse.surahName,
+              surahNumber: verse.surahNumber,
               verseNumber: verse.verseNumber,
+              juz: verse.juz,
             ),
           );
         }
@@ -159,7 +176,9 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
               questionText: verse.text,
               correctAnswerText: nextVerse.text,
               surahName: verse.surahName,
+              surahNumber: verse.surahNumber,
               verseNumber: verse.verseNumber,
+              juz: verse.juz,
             ),
           );
         } else {
@@ -168,7 +187,9 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
               questionText: verse.text,
               correctAnswerText: verse.text,
               surahName: verse.surahName,
+              surahNumber: verse.surahNumber,
               verseNumber: verse.verseNumber,
+              juz: verse.juz,
             ),
           );
         }
@@ -206,14 +227,19 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
       _questions.clear();
       _nextVerses.clear();
       _surahNames.clear();
+      _surahNumbers.clear();
       _verseNumbers.clear();
+      _juzs.clear();
       _options.clear();
+      _outcomes.clear();
 
       for (var item in arrangedItems) {
         _questions.add(item.questionText);
         _nextVerses.add(item.correctAnswerText);
         _surahNames.add(item.surahName);
+        _surahNumbers.add(item.surahNumber);
         _verseNumbers.add(item.verseNumber);
+        _juzs.add(item.juz);
 
         final correctText = item.correctAnswerText;
 
@@ -255,7 +281,9 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
       _answered = true;
       final selectedText = _options[_currentIndex][index];
       final correctText = _nextVerses[_currentIndex];
-      if (selectedText == correctText) {
+      final isCorrect = selectedText == correctText;
+      _outcomes.add(isCorrect);
+      if (isCorrect) {
         _score++;
       }
     });
@@ -270,10 +298,26 @@ class _SambungAyatScreenState extends ConsumerState<SambungAyatScreen> {
       });
     } else {
       // Save result to provider
+      final List<VerseAttempt> attempts = [];
+      for (int i = 0; i < _questions.length; i++) {
+        final isCorrect = i < _outcomes.length ? _outcomes[i] : false;
+        attempts.add(
+          VerseAttempt(
+            surahNumber: _surahNumbers[i],
+            surahName: _surahNames[i],
+            verseNumber: _verseNumbers[i],
+            juz: _juzs[i],
+            isCorrect: isCorrect,
+            timestamp: DateTime.now(),
+          ),
+        );
+      }
+
       ref.read(latihanHistoryProvider.notifier).addSession(
             'Sambung Ayat',
             _score,
             _questions.length,
+            attempts,
           );
       _showResultDialog();
     }

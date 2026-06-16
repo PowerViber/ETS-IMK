@@ -18,7 +18,7 @@ class HomeScreen extends ConsumerWidget {
     final completionRate = totalTargets > 0 ? (completedTargetsCount * 100 ~/ totalTargets) : 0;
     
     final history = ref.watch(latihanHistoryProvider);
-    final totalSessions = history.length;
+    final totalSessions = history.sessions.length;
     final avgAccuracy = ref.watch(latihanHistoryProvider.notifier).getAverageAccuracy();
 
     return Scaffold(

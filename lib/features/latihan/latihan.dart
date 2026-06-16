@@ -487,183 +487,394 @@ class LatihanScreen extends ConsumerWidget {
     );
   }
 
+  void _showMurojaahStartDialog(BuildContext context, MurojaahRecommendation rec) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      useRootNavigator: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 14,
+            right: 14,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 14,
+            top: 14,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: context.appSurface,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Murojaah ${rec.name}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: context.appTextPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Pilih metode latihan untuk memperkuat hafalan Anda.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: context.appTextSecondary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.quiz, size: 18),
+                        label: const Text('Tebak Surah'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF166D56),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          final path = '/latihan/tebak-surah';
+                          final queryParams = <String, String>{};
+                          queryParams['count'] = '5';
+                          if (rec.type == 'Surah') {
+                            queryParams['surah'] = rec.name;
+                          } else {
+                            final juzStr = rec.name.replaceAll('Juz ', '');
+                            queryParams['startJuz'] = juzStr;
+                            queryParams['endJuz'] = juzStr;
+                          }
+                          context.go(Uri(path: path, queryParameters: queryParams).toString());
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.menu_book, size: 18),
+                        label: const Text('Sambung Ayat'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF166D56),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          final path = '/latihan/sambung-ayat';
+                          final queryParams = <String, String>{};
+                          queryParams['count'] = '5';
+                          if (rec.type == 'Surah') {
+                            queryParams['surah'] = rec.name;
+                          } else {
+                            final juzStr = rec.name.replaceAll('Juz ', '');
+                            queryParams['startJuz'] = juzStr;
+                            queryParams['endJuz'] = juzStr;
+                          }
+                          context.go(Uri(path: path, queryParameters: queryParams).toString());
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(latihanHistoryProvider);
+    final recommendations = ref.watch(latihanHistoryProvider.notifier).getMurojaahRecommendations();
 
     return Scaffold(
       backgroundColor: context.appBackground,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Latihan',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: context.appTextPrimary,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Latihan',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: context.appTextPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Uji hafalan Al-Quran Anda dengan kuis interaktif.',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: context.appTextSecondary,
+              const SizedBox(height: 4),
+              Text(
+                'Uji hafalan Al-Quran Anda dengan kuis interaktif.',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: context.appTextSecondary,
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            _LatihanCard(
-              title: 'Tebak Surah',
-              subtitle: 'Latih hafalan nama surah dengan kuis cepat.',
-              buttonLabel: 'Mulai Kuis',
-              icon: Icons.quiz,
-              onTap: () => _showSetupBottomSheet(context, 'Tebak Surah'),
-            ),
-            const SizedBox(height: 10),
-            _LatihanCard(
-              title: 'Sambung Ayat',
-              subtitle: 'Lanjutkan potongan ayat untuk menguji hafalan.',
-              buttonLabel: 'Mulai Latihan',
-              icon: Icons.menu_book,
-              onTap: () => _showSetupBottomSheet(context, 'Sambung Ayat'),
-            ),
-            const SizedBox(height: 20),
-            const _LatihanSectionHeader(
-              title: 'Riwayat Latihan',
-              subtitle: 'Hasil latihan Anda akan tersimpan di sini.',
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: history.isEmpty
-                  ? Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+              const SizedBox(height: 18),
+              _LatihanCard(
+                title: 'Tebak Surah',
+                subtitle: 'Latih hafalan nama surah dengan kuis cepat.',
+                buttonLabel: 'Mulai Kuis',
+                icon: Icons.quiz,
+                onTap: () => _showSetupBottomSheet(context, 'Tebak Surah'),
+              ),
+              const SizedBox(height: 10),
+              _LatihanCard(
+                title: 'Sambung Ayat',
+                subtitle: 'Lanjutkan potongan ayat untuk menguji hafalan.',
+                buttonLabel: 'Mulai Latihan',
+                icon: Icons.menu_book,
+                onTap: () => _showSetupBottomSheet(context, 'Sambung Ayat'),
+              ),
+              if (recommendations.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                const _LatihanSectionHeader(
+                  title: 'Rekomendasi Murojaah',
+                  subtitle: 'Prioritas review berdasarkan tingkat akurasi Anda.',
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, idx) {
+                      final rec = recommendations[idx];
+                      return Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          color: context.appSurface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: context.appBorder),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0A000000),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => _showMurojaahStartDialog(context, rec),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        rec.type == 'Surah' ? Icons.menu_book_rounded : Icons.grid_on_rounded,
+                                        color: const Color(0xFF166D56),
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          rec.name,
+                                          style: TextStyle(
+                                            color: context.appTextPrimary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Akurasi: ${(rec.accuracy * 100).toStringAsFixed(0)}%',
+                                    style: TextStyle(
+                                      color: context.appTextSecondary,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: LinearProgressIndicator(
+                                      value: rec.accuracy,
+                                      backgroundColor: context.appSoftSurface,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        rec.accuracy < 0.5
+                                            ? const Color(0xFFE05252)
+                                            : rec.accuracy < 0.75
+                                                ? const Color(0xFFFFD166)
+                                                : const Color(0xFF1AAA7E),
+                                      ),
+                                      minHeight: 6,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              const _LatihanSectionHeader(
+                title: 'Riwayat Latihan',
+                subtitle: 'Hasil latihan Anda akan tersimpan di sini.',
+              ),
+              const SizedBox(height: 10),
+              if (history.sessions.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: context.appSurface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: context.appBorder),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x12000000),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.history_toggle_off,
+                            color: Color(0xFF166D56), size: 22),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Belum ada riwayat latihan',
+                          style: TextStyle(
+                            color: context.appTextSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 112),
+                  itemCount: history.sessions.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final session = history.sessions[index];
+                    final dateStr = '${session.dateTime.day}/${session.dateTime.month}/${session.dateTime.year}';
+                    final timeStr = '${session.dateTime.hour.toString().padLeft(2, '0')}:${session.dateTime.minute.toString().padLeft(2, '0')}';
+                    
+                    return Container(
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: context.appSurface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: context.appBorder),
                         boxShadow: const [
                           BoxShadow(
-                            color: Color(0x12000000),
-                            blurRadius: 12,
+                            color: Color(0x0A000000),
+                            blurRadius: 10,
                             offset: Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.history_toggle_off,
-                                color: Color(0xFF166D56), size: 22),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Belum ada riwayat latihan',
-                              style: TextStyle(
-                                color: context.appTextSecondary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: session.type == 'Tebak Surah'
+                                  ? const Color(0xFFE7F7F1)
+                                  : const Color(0xFFEAF2FF),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              session.type == 'Tebak Surah'
+                                  ? Icons.quiz
+                                  : Icons.menu_book,
+                              color: session.type == 'Tebak Surah'
+                                  ? const Color(0xFF166D56)
+                                  : const Color(0xFF2B66C5),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  session.type,
+                                  style: TextStyle(
+                                    color: context.appTextPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$dateStr - $timeStr',
+                                  style: TextStyle(
+                                    color: context.appTextSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF166D56),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Skor: ${session.score}/${session.totalQuestions}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 112),
-                      itemCount: history.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final session = history[index];
-                        final dateStr = '${session.dateTime.day}/${session.dateTime.month}/${session.dateTime.year}';
-                        final timeStr = '${session.dateTime.hour.toString().padLeft(2, '0')}:${session.dateTime.minute.toString().padLeft(2, '0')}';
-                        
-                        return Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: context.appSurface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: context.appBorder),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x0A000000),
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: session.type == 'Tebak Surah'
-                                            ? const Color(0xFFE7F7F1)
-                                            : const Color(0xFFEAF2FF),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        session.type == 'Tebak Surah'
-                                            ? Icons.quiz
-                                            : Icons.menu_book,
-                                        color: session.type == 'Tebak Surah'
-                                            ? const Color(0xFF166D56)
-                                            : const Color(0xFF2B66C5),
-                                        size: 20,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            session.type,
-                                            style: TextStyle(
-                                              color: context.appTextPrimary,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            '$dateStr - $timeStr',
-                                            style: TextStyle(
-                                              color: context.appTextSecondary,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF166D56),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        'Skor: ${session.score}/${session.totalQuestions}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
                           ),
-                  ),
-          ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );

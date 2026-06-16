@@ -29,6 +29,7 @@ class TebakSurahScreen extends ConsumerStatefulWidget {
 class _TebakSurahScreenState extends ConsumerState<TebakSurahScreen> {
   final List<QuranVerse> _questions = [];
   final List<List<String>> _options = [];
+  final List<bool> _outcomes = [];
   int _currentIndex = 0;
   int _score = 0;
   int? _selectedAnswerIndex;
@@ -57,36 +58,44 @@ class _TebakSurahScreenState extends ConsumerState<TebakSurahScreen> {
       filtered = List<QuranVerse>.from(quranVersesDb);
     }
 
-    filtered.shuffle(_random);
+    // Select distinct verses using weighted selection
+    final historyNotifier = ref.read(latihanHistoryProvider.notifier);
     final numQuestions = min(widget.questionCount, filtered.length);
     final List<QuranVerse> selectedVerses = [];
+    final List<QuranVerse> pool = List<QuranVerse>.from(filtered);
 
-    for (var verse in filtered) {
-      if (selectedVerses.length >= numQuestions) break;
+    for (int i = 0; i < numQuestions; i++) {
+      if (pool.isEmpty) break;
 
-      // Check if this verse is too close (consecutive) to any already selected verse
-      bool tooClose = false;
-      for (var selected in selectedVerses) {
-        if (selected.surahNumber == verse.surahNumber &&
-            (selected.verseNumber - verse.verseNumber).abs() <= 1) {
-          tooClose = true;
+      double totalWeight = 0;
+      final List<double> weights = [];
+      for (var verse in pool) {
+        final w = historyNotifier.getVerseWeight(verse.surahName, verse.verseNumber);
+        weights.add(w);
+        totalWeight += w;
+      }
+
+      if (totalWeight <= 0) {
+        final selected = pool[_random.nextInt(pool.length)];
+        selectedVerses.add(selected);
+        pool.remove(selected);
+        continue;
+      }
+
+      final r = _random.nextDouble() * totalWeight;
+      double sum = 0;
+      QuranVerse? selectedVerse;
+      for (int j = 0; j < pool.length; j++) {
+        sum += weights[j];
+        if (sum >= r) {
+          selectedVerse = pool[j];
           break;
         }
       }
 
-      if (!tooClose) {
-        selectedVerses.add(verse);
-      }
-    }
-
-    // Fill remaining if we couldn't meet count without closeness
-    if (selectedVerses.length < numQuestions) {
-      for (var verse in filtered) {
-        if (selectedVerses.length >= numQuestions) break;
-        if (!selectedVerses.contains(verse)) {
-          selectedVerses.add(verse);
-        }
-      }
+      selectedVerse ??= pool.last;
+      selectedVerses.add(selectedVerse);
+      pool.remove(selectedVerse);
     }
 
     // Arrange selectedVerses to prevent adjacent consecutive questions
@@ -119,6 +128,7 @@ class _TebakSurahScreenState extends ConsumerState<TebakSurahScreen> {
     setState(() {
       _questions.clear();
       _options.clear();
+      _outcomes.clear();
       _questions.addAll(arrangedVerses);
 
       for (var verse in arrangedVerses) {
@@ -145,7 +155,9 @@ class _TebakSurahScreenState extends ConsumerState<TebakSurahScreen> {
       _answered = true;
       final selectedName = _options[_currentIndex][index];
       final correctName = _questions[_currentIndex].surahName;
-      if (selectedName == correctName) {
+      final isCorrect = selectedName == correctName;
+      _outcomes.add(isCorrect);
+      if (isCorrect) {
         _score++;
       }
     });
@@ -160,10 +172,27 @@ class _TebakSurahScreenState extends ConsumerState<TebakSurahScreen> {
       });
     } else {
       // Save result to provider
+      final List<VerseAttempt> attempts = [];
+      for (int i = 0; i < _questions.length; i++) {
+        final isCorrect = i < _outcomes.length ? _outcomes[i] : false;
+        final verse = _questions[i];
+        attempts.add(
+          VerseAttempt(
+            surahNumber: verse.surahNumber,
+            surahName: verse.surahName,
+            verseNumber: verse.verseNumber,
+            juz: verse.juz,
+            isCorrect: isCorrect,
+            timestamp: DateTime.now(),
+          ),
+        );
+      }
+
       ref.read(latihanHistoryProvider.notifier).addSession(
             'Tebak Surah',
             _score,
             _questions.length,
+            attempts,
           );
       _showResultDialog();
     }
